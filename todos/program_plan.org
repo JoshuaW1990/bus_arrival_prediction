@@ -1,6 +1,9 @@
-;; This buffer is for text that is not saved, and for Lisp evaluation.
-;; To create a file, visit it with <open> and enter text in its buffer.
-
 * program plan
-
-** baseline algorithm test
+** TODO Preparation
+Understand how to use the Panda in Python
+** TODO baseline algorithm
+*** TODO Average Arrival Time
+1. Use the arrival time of the specific route in the historical data to obtain the average value.
+2. Use the average value as the prediction
+*** TODO simple SVM
+*** TODO simple Neural Network
