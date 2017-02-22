@@ -61,7 +61,7 @@ def generate_segment_table(selected_trips):
 			segment_end = selected_stop_times.iloc[i + 1].stop_id
 			scheduled_time_of_day = selected_stop_times.iloc[i].departure_time
 			trip_id = selected_stop_times.iloc[i].trip_id
-			df.loc[len(df)] = [segment_start, segment_end, 'time_of_day', trip_id, 'travel_duration']
+			df.loc[len(df)] = [segment_start, segment_end, 'time_of_day', trip_id, 0.0]
 	return stop_times, df
 
 
