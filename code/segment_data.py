@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 
 
 path = '../data/GTFS/gtfs/'
+
 def select_trip_list(path, num_route):
 	# Read the GTFS data
 	# data source: MTA, state island, Jan, 4, 2016
@@ -46,24 +47,6 @@ def filter_history_data(date_start, date_end, selected_trips):
 		history_list.append(tmp_history)
 	full_history = pd.concat(history_list)
 	return full_history
-
-# def generate_segment_table(selected_trips):
-# 	"""
-# 	return table format:
-# 	segment_start, segment_end, scheduled_time_of_day, trip_id
-# 	"""
-# 	stop_times = pd.read_csv(path + 'stop_times.txt')
-# 	df = pd.DataFrame(columns = ['segment_start', 'segment_end', 'segment_pair', 'time_of_day', 'trip_id', 'travel_duration'])
-# 	tmp = []
-# 	for trip in selected_trips:
-# 		selected_stop_times = stop_times[stop_times.trip_id == trip]
-# 		for i in xrange(len(selected_stop_times) - 1):
-# 			segment_start = selected_stop_times.iloc[i].stop_id
-# 			segment_end = selected_stop_times.iloc[i + 1].stop_id
-# 			scheduled_time_of_day = selected_stop_times.iloc[i].departure_time
-# 			trip_id = selected_stop_times.iloc[i].trip_id
-# 			df.loc[len(df)] = [segment_start, segment_end, (segment_start, segment_end), 'time_of_day', trip_id, 0.0]
-# 	return stop_times, df
 
 
 def extractTime(time):
@@ -117,6 +100,8 @@ def calculate_travel_duration_single_date(history):
 			continue
 		else:
 			filtered_history.loc[len(filtered_history)] = list(history.iloc[i])
+	if len(filtered_history) == 0:
+		return None
 	last_stop_id = filtered_history.iloc[-1].next_stop_id
 	tmp_history = history[history.next_stop_id == last_stop_id]
 	filtered_history.iloc[-1] = tmp_history.iloc[0]
@@ -130,13 +115,17 @@ def calculate_travel_duration_single_date(history):
 
 	# define a tuple list to store the stops and the corresponding arrival time
 	stop_arrival_time = []
+	# if trip_id == 'CA_A6-Weekday-SDon-037800_X14_305':
+	# 	print history.info()
 	for i in xrange(len(filtered_history) - 1):
 		next_stop = filtered_history.iloc[i].next_stop_id
 		distance_location = float(filtered_history.iloc[i + 1].dist_along_route) - float(filtered_history.iloc[i].dist_along_route)
 		distance_station = float(filtered_history.iloc[i].dist_from_stop)
-		ratio = distance_station / distance_location
-		if ratio >= 1 or ratio < 0:
+		# if distance_location == 0:
+		# 	print filtered_history.iloc[i - 2: i + 2]
+		if distance_station >= distance_location or distance_location < 0:
 			continue
+		ratio = distance_station / distance_location
 		time1 = filtered_history.iloc[i].timestamp
 		time2 = filtered_history.iloc[i + 1].timestamp
 		time_span = calculateTimeSpan(time1, time2)
@@ -150,13 +139,13 @@ def calculate_travel_duration_single_date(history):
 	# the format of the dataframe:
 	# segment_start  segment_end  time_of_day  travel_duration
 	#   str             str         str           float(seconds)
-	segment_pair_df = pd.DataFrame(columns=['segment_start', 'segment_end', 'segment_pair', 'time_of_day', 'day_of_week', 'weather', 'trip_id', 'travel_duration'])
+	segment_pair_df = pd.DataFrame(columns=['segment_start', 'segment_end', 'segment_pair', 'time_of_day', 'day_of_week', 'date', 'weather', 'trip_id', 'travel_duration'])
 	for i in xrange(len(stop_arrival_time) - 1):
 		segment_start = stop_arrival_time[i][0]
 		segment_end = stop_arrival_time[i + 1][0]
 		travel_duration = stop_arrival_time[i + 1][1] - stop_arrival_time[i][1]
 		time_of_day = stop_arrival_time[i][1]
-		segment_pair_df.loc[len(segment_pair_df)] = [segment_start, segment_end,  (segment_start, segment_end), str(time_of_day)[11:19], date_time.weekday(), add_weather_info(date), trip_id, travel_duration.total_seconds()]
+		segment_pair_df.loc[len(segment_pair_df)] = [segment_start, segment_end,  (segment_start, segment_end), str(time_of_day)[11:19], date_time.weekday(), date, add_weather_info(date), trip_id, travel_duration.total_seconds()]
 
 	return segment_pair_df
 
@@ -176,40 +165,59 @@ def calculate_travel_duration(single_trip, full_history):
 			str         strptime    int      str         float
 	"""
 	history = full_history[full_history.trip_id == single_trip]
+	print "trip id: ", single_trip
+	print "history length: ", len(history)
+	if len(history) == 0:
+		return None
 	date_set = set(list(history.service_date))
 	segment_df_list = []
 	# weather information and the day of week should be filled in each loop of the date
 	for date in date_set:
-		print "date: ", date
 		tmp_history = history[history.service_date == date]
 		segment_pair_df = calculate_travel_duration_single_date(tmp_history)
+		if segment_pair_df is None:
+			continue
 		segment_df_list.append(segment_pair_df)
 	segment_df = pd.concat(segment_df_list)
 	return segment_df
 
 
 
-
-
-# code for the function calculate_travel_duration
-# data preparation
-selected_trips = select_trip_list(path, 1)
-full_history = filter_history_data(20160101, 20160131, selected_trips)
-# stop_times, segment_df = generate_segment_table(selected_trips)
-# temporary use this
-single_trip = full_history.iloc[0].trip_id
-
-segment_df = calculate_travel_duration(single_trip, full_history)
-print segment_df.info()
-
-
-
-
+def generate_dataframe(selected_trips, date_start, date_end):
+	"""
+	This function will read the list of the selected trips and read the them one by one and concatenate all their dataframe together.
+	"""
+	full_history = filter_history_data(date_start, date_end, selected_trips)
+	result_list = []
+	for single_trip in selected_trips:
+		tmp_segment_df = calculate_travel_duration(single_trip, full_history)
+		if tmp_segment_df is None:
+			continue
+		result_list.append(tmp_segment_df)
+	segment_df = pd.concat(result_list)
+	return segment_df
 
 
 
 
 
+# # code for the function generate_dataframe
+# # data preparation
+# selected_trips = select_trip_list(path, 2)
+# segment_df = generate_dataframe(selected_trips, 20160104, 20160131)
+# print segment_df.info()
+
+# # code part
+# full_history = filter_history_data(20160101, 20160110, selected_trips)
+# result_list = []
+# for single_trip in selected_trips:
+# 	tmp_segment_df = calculate_travel_duration(single_trip, full_history)
+# 	if tmp_segment_df is None:
+# 		continue
+# 	result_list.append(tmp_segment_df)
+
+# segment_df = pd.concat(result_list)
+# print segment_df.info()
 
 
 
@@ -218,9 +226,19 @@ print segment_df.info()
 
 
 
-# if __name__=="__main__":
-# 	selected_trips = select_trip_list(path, 1)
-# 	full_history = filter_history_data(20160101, 20160110, selected_trips)
+
+
+
+
+
+
+
+
+
+if __name__=="__main__":
+	selected_trips = select_trip_list(path, 2)
+	segment_df = generate_dataframe(selected_trips, 20160104, 20160131)
+	segment_df.to_csv('data.csv')
 	
 
 
