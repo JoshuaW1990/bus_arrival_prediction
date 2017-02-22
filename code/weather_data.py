@@ -19,8 +19,8 @@ if __name__ == "__main__":
     from datetime import date
     from dateutil.rrule import rrule, DAILY
 
-    a = date(2017, 1, 1)
-    b = date(2017, 1, 31)
+    a = date(2016, 1, 1)
+    b = date(2016, 1, 31)
 
     result = [['date', 'year', 'month', 'day', 'fog', 'rain', 'snow']]
     for dt in rrule(DAILY, dtstart=a, until=b):
