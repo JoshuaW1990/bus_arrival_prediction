@@ -1,4 +1,10 @@
-# This file is used to export the segment data for future analysis
+"""
+This file is used to export the segment data for future analysis
+It will export the data.csv file which records the travel duration for all the segment pairs.
+The format of the returned value: dataframe
+segment_start  segment_end  segment_pair   time_of_day  travel_duration
+  str             str         (str, str)      str         float(seconds)
+"""
 
 # import module
 import pandas as pd

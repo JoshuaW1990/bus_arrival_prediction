@@ -4,6 +4,8 @@ This file is used to calcualte the distance of each stops for a specific route f
 It will read three different files: trips.txt, stop_times.txt and history file.
 Use the stop_times.txt and trips.txt file to obtain the stop sequence for each route and use the historical data to calculate the actual distance for each stop.
 If the specific stop has no records for the distance, we will use the average value as the result like calculating the travel duration.
+
+Since the dist_along_route in the history data is actually the distance between the next_stop and the intial stop, which decrease the difficulty a lot.
 """
 
 import pandas as pd
@@ -12,9 +14,10 @@ import os
 
 def read_data(route_num, direction_id):
     """
-    This file is used to read all the corresponding data according to the requirements: number of the routes we need to calcualte.
+    Read all the corresponding data according to the requirements: number of the routes we need to calcualte.
     Input: route_num
-    Output: Three different trips, stop_times, historicy. All of these three data should have been filtered according to the trip_id and route_id
+    Output: Three different dataframe:
+    trips, stop_times, history. All of these three data should have been filtered according to the trip_id and route_id
     """
     trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
     stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
@@ -50,7 +53,7 @@ def read_data(route_num, direction_id):
 
 def calculate_stop_distance(trips, stop_times, history, direction_id):
     """
-    This function is used to calculate the distance of each stop with its inital stop.
+    Calculate the distance of each stop with its inital stop. Notice that the dist_along_route is the distance between the next_stop and the initial stop
     Input: three filtered dataframe, trips, stop_times, history
     Output: One dataframe, route_stop_dist
     The format of the route_stop_dist:
@@ -68,14 +71,17 @@ def calculate_stop_distance(trips, stop_times, history, direction_id):
         for i in range(1, len(stop_sequence)):
             stop_id = stop_sequence[i]
             current_history = selected_history[selected_history.next_stop_id == stop_id]
-            if len(current_history) == 0:
+            if stop_id == str(result.iloc[-1].stop_id):
+                continue
+            elif len(current_history) == 0:
                 dist_along_route = None
             else:
                 current_dist = []
                 for i in range(len(current_history)):
-                    current_dist.append(current_history.iloc[i].dist_along_route + current_history.iloc[i].dist_from_stop)
+                    current_dist.append(current_history.iloc[i].dist_along_route)
                 dist_along_route = sum(current_dist) / float(len(current_dist))
             result.loc[len(result)] = [single_route, direction_id, stop_id, dist_along_route]
+    result.to_csv('original_route_dist.csv')
     # Since some of the stops might not record, it is necessary to check the dataframe again.
     count = 1
     for i in range(1, len(result) - 1):
@@ -85,10 +91,8 @@ def calculate_stop_distance(trips, stop_times, history, direction_id):
             count += 1
         else:
             if count != 1:
-                print count, i
                 distance = (float(result.iloc[i].dist_along_route) - float(prev)) / float(count)
                 while count > 1:
-                    print count
                     result.iloc[i - count + 1, result.columns.get_loc('dist_along_route')] = result.iloc[i - count].dist_along_route + float(distance)
                     count -= 1
             else:
