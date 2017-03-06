@@ -17,8 +17,17 @@ def select_trip_list(path, num_route):
 	trips = pd.read_csv(path + 'trips.txt')
 
 	# select a specific route and the corresponding trips
-	select_routes = trips.iloc[:num_route].route_id
+	route_list = list(trips.route_id)
+	non_dup_route_list = [route_list[0]]
+	for i in xrange(1, len(route_list)):
+		if route_list[i] == non_dup_route_list[-1]:
+			continue
+		else:
+			non_dup_route_list.append(route_list[i])
+	select_routes = non_dup_route_list[:num_route]
 	select_trips = []
+	print "route list is :"
+	print select_routes
 	for route in select_routes:
 		select_trips += list(trips[(trips.route_id == route) & (trips.direction_id == 0)].trip_id)
 		print "number of the selected trips:"
@@ -92,8 +101,8 @@ def calculate_travel_duration_single_date(history):
 	# filter the historical data
 	# When filtering the last one, we need to notice that sometimes the bus has been stopped but the GPS device is still recording the location of the bus. Thus we need to check the last stop specificaly.
 	trip_id = history.iloc[0].trip_id
-	date = history.iloc[0].service_date
-	date_time = datetime.strptime(str(date), '%Y%m%d')
+        date = history.iloc[0].timestamp[:10].translate(None, '-')
+        date_time = datetime.strptime(date, '%Y%m%d')
 	filtered_history = pd.DataFrame(columns = history.columns)
 	for i in xrange(1, len(history)):
 		if history.iloc[i - 1].next_stop_id == history.iloc[i].next_stop_id:
@@ -145,7 +154,7 @@ def calculate_travel_duration_single_date(history):
 		segment_end = stop_arrival_time[i + 1][0]
 		travel_duration = stop_arrival_time[i + 1][1] - stop_arrival_time[i][1]
 		time_of_day = stop_arrival_time[i][1]
-		segment_pair_df.loc[len(segment_pair_df)] = [int(segment_start), int(segment_end),  (int(segment_start), int(segment_end)), str(time_of_day)[11:19], date_time.weekday(), date, add_weather_info(date), trip_id, travel_duration.total_seconds()]
+		segment_pair_df.loc[len(segment_pair_df)] = [int(segment_start), int(segment_end),  (int(segment_start), int(segment_end)), str(time_of_day)[11:19], date_time.weekday(), date, add_weather_info(int(date)), trip_id, travel_duration.total_seconds()]
 
 	return segment_pair_df
 
@@ -201,22 +210,7 @@ def generate_dataframe(selected_trips, date_start, date_end):
 
 
 
-
-
-
-
-
-
 if __name__=="__main__":
 	selected_trips = select_trip_list(path, 2)
 	segment_df = generate_dataframe(selected_trips, 20160104, 20160131)
 	segment_df.to_csv('data.csv')
-	
-
-
-
-
-
-
-
-
