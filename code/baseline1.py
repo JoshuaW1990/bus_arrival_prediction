@@ -106,37 +106,63 @@ def obtain_api_data(date, current_time, stop_times, direction, stop_id):
     """
     result = pd.DataFrame(columns=['trip_id', 'vehicle_id', 'dist_along_route', 'stop_num_from_call'])
     for single_trip in selected_trips:
+        print single_trip
         # generate stop sequence
         stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
         # obtain the time segment containing the specific time point
         single_history = history[history.trip_id == single_trip]
+        tmp_history = None
         for i in xrange(1, len(single_history)):
             time_prev = single_history.iloc[i - 1].timestamp[11:19] # str
             time_next = single_history.iloc[i].timestamp[11:19] # str
             if time_prev <= current_time and time_next >= current_time:
-                tmp_history = single_history[i - 1: i + 1]
-                break
+                # Some trips are operated in the midnight
+                if single_history.iloc[i - 1].service_date != single_history.iloc[i].service_date:
+                    break
+                else:
+                    tmp_history = single_history[i - 1: i + 1]
+                    print time_prev, current_time, time_next
+                    print i, len(tmp_history)
+                    print single_history.iloc[i - 1].next_stop_id, single_history.iloc[i].next_stop_id
+                    print stop_sequence
+                    break
             else:
                 continue
-        distance_between_point = float(tmp_history.iloc[1].dist_along_route) - float(tmp_history.iloc[0].dist_along_route)
+        if tmp_history is None:
+            continue
+        """
+        Calculate the distance between the two points:
+        distance_stop1 = dist_along_route - dist_from_next_stop
+        distance_stop2 = ...
+        distance_between_points = distance_stop2 - distance_stop1
+        time1, time2, time3
+        ratio = (time2 - time1) / (time3 - time2)
+        dist_along_route = distance_stop1 + (distance_between_points * ratio)
+        """
+        distance_stop1 = tmp_history.iloc[0].dist_along_route
+        distance_stop2 = tmp_history.iloc[1].dist_along_route
+        distance_between_points = float(distance_stop2) - float(distance_stop1)
         time1 = datetime.strptime(time_prev, '%H:%M:%S')
         time2 = datetime.strptime(current_time, '%H:%M:%S')
         time3 = datetime.strptime(time_next, '%H:%M:%S')
         segment_duration = time3 - time1
         current_duration = time2 - time1
         ratio = current_duration.total_seconds() / segment_duration.total_seconds()
-        current_dist = distance_between_point * ratio
-        dist_along_route = float(tmp_history.iloc[0].dist_along_route) + current_dist
+        current_dist = distance_between_points * ratio
+        dist_along_route = float(distance_stop1) + current_dist
         """
         The dist_from_next_stop is harder to be calculated. Considering that this value might not be used in the baseline model, thus we ignore this parameter and continue.
         """
         # Obtain the stop_num_from_call by loop
-        count = 1
-        for i in range(1, len(stop_sequence)):
-            if stop_sequence[i] == stop:
-                break
-            count + 1
-        result.loc[len(result)] = [single_trip, history[history.trip_id == single_trip].iloc[10].vehicle_id, dist_along_route, count]
+        current_stop_index = stop_sequence.index(int(tmp_history.iloc[1].next_stop_id)) - 1
+        target_stop_index = stop_sequence.index(stop_id)
+        print "indices:"
+        print current_stop_index, target_stop_index
+        stop_num_from_call = target_stop_index - current_stop_index
+        if stop_num_from_call < 0:
+            print "stop_num_from_call < 0: ", single_trip
+            continue
+        result.loc[len(result)] = [single_trip, history[history.trip_id == single_trip].iloc[10].vehicle_id, dist_along_route, stop_num_from_call]
     return result
 
 
@@ -172,7 +198,7 @@ current_time = "12:20:19"
 
 # code for function: prediction_baseline1
 api_df = obtain_api_data(date, current_time, stop_times, direction_id, stop)
-# api_df.to_csv("api_data.csv")
+api_df.to_csv("api_data.csv")
 # api_df = pd.read_csv('api_data.csv')
 # route_stop_dist = pd.read_csv('route_stop_dist.csv')
 # trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
