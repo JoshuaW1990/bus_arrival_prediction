@@ -13,9 +13,11 @@ The project has been divided into several phases:
 Current step: Demo analysis with simple baseline algorithm
 
 #### Project Introduction with completed part
-WORKING add the the introduction for the data collection
+TODO add the the introduction for the data collection
 
+##### Download file TODO
 
+##### Preprocess data TODO
 
 #### Project Introduction with the currently working part
 TODO add the introduction for the simple baseline algorithm
