@@ -20,7 +20,7 @@ def read_dataset():
     """
     read the data.csv file to obtain the segment dataset
     """
-    segment_df = pd.read_csv('data1.csv')
+    segment_df = pd.read_csv('data.csv')
     return segment_df
 
 # Obtain the set of the segment_pair
@@ -57,7 +57,7 @@ def obtain_api_data(date, current_time, stop_times, direction, stop_id):
     # Generate the selected trip set
     # Extract the scheduled GTFS data
     trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
-    selected_trips = set(list(stop_times[stop_times.stop_id == stop].trip_id))
+    selected_trips = set(list(stop_times[stop_times.stop_id == stop_id].trip_id))
     # Filtering the trips according to the direction
     removed_trips = set()
     for single_trip in selected_trips:
@@ -121,10 +121,6 @@ def obtain_api_data(date, current_time, stop_times, direction, stop_id):
                     break
                 else:
                     tmp_history = single_history[i - 1: i + 1]
-                    print time_prev, current_time, time_next
-                    print i, len(tmp_history)
-                    print single_history.iloc[i - 1].next_stop_id, single_history.iloc[i].next_stop_id
-                    print stop_sequence
                     break
             else:
                 continue
@@ -139,9 +135,9 @@ def obtain_api_data(date, current_time, stop_times, direction, stop_id):
         ratio = (time2 - time1) / (time3 - time2)
         dist_along_route = distance_stop1 + (distance_between_points * ratio)
         """
-        distance_stop1 = tmp_history.iloc[0].dist_along_route
-        distance_stop2 = tmp_history.iloc[1].dist_along_route
-        distance_between_points = float(distance_stop2) - float(distance_stop1)
+        distance_stop1 = float(tmp_history.iloc[0].dist_along_route) - float(tmp_history.iloc[0].dist_from_stop)
+        distance_stop2 = float(tmp_history.iloc[1].dist_along_route) - float(tmp_history.iloc[1].dist_from_stop)
+        distance_between_points =  distance_stop2 - distance_stop1
         time1 = datetime.strptime(time_prev, '%H:%M:%S')
         time2 = datetime.strptime(current_time, '%H:%M:%S')
         time3 = datetime.strptime(time_next, '%H:%M:%S')
@@ -149,6 +145,7 @@ def obtain_api_data(date, current_time, stop_times, direction, stop_id):
         current_duration = time2 - time1
         ratio = current_duration.total_seconds() / segment_duration.total_seconds()
         current_dist = distance_between_points * ratio
+        print tmp_history.iloc[0].next_stop_id, tmp_history.iloc[1].next_stop_id, current_dist
         dist_along_route = float(distance_stop1) + current_dist
         """
         The dist_from_next_stop is harder to be calculated. Considering that this value might not be used in the baseline model, thus we ignore this parameter and continue.
@@ -156,21 +153,71 @@ def obtain_api_data(date, current_time, stop_times, direction, stop_id):
         # Obtain the stop_num_from_call by loop
         current_stop_index = stop_sequence.index(int(tmp_history.iloc[1].next_stop_id)) - 1
         target_stop_index = stop_sequence.index(stop_id)
-        print "indices:"
-        print current_stop_index, target_stop_index
         stop_num_from_call = target_stop_index - current_stop_index
         if stop_num_from_call < 0:
             print "stop_num_from_call < 0: ", single_trip
             continue
         result.loc[len(result)] = [single_trip, history[history.trip_id == single_trip].iloc[10].vehicle_id, dist_along_route, stop_num_from_call]
+    return result, trips
+
+
+def generate_arrival_time(date, stop_times, trips, route_stop_dist, current_time, direction_id, stop_id):
+    """
+    This file is used to generate the arrival time according to the specific direction, stop_id, and the given local time.
+    Input:
+    Output: dataframe
+    trip_id    vehicle_id    time_of_day    dist_along_route    stop_num_from_call    estimated_arrival_time
+     int         str           str             float                int/float             float
+    """
+    # TODO change the api_df here or in the obtain_api_data function
+    api_df = pd.read_csv('api_data.csv')
+    selected_trips = set(api_df.trip_id)
+    result = pd.DataFrame(columns=['trip_id', 'vehicle_id', 'time_of_day', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time'])
+    for single_trip in selected_trips:
+        # obtain the dist_along_route and the stop_num_from_call according to the api data
+        dist_along_route = float(api_df[api_df.trip_id == single_trip].dist_along_route)
+        stop_num_from_call = int(api_df[api_df.trip_id == single_trip].stop_num_from_call)
+        # obtain the stop_sequence
+        stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
+        # obtain all the related segment pairs
+        route_id = trips[trips.trip_id == single_trip].iloc[0].route_id
+        stop_dist_list = route_stop_dist[route_stop_dist.route_id == route_id]
+        end_index = stop_sequence.index(stop_id)
+        start_index = end_index - int(stop_num_from_call)
+        segment_pair_list = []
+        for index in range(start_index, end_index - 1):
+            current_segment = (stop_sequence[index], stop_sequence[index + 1])
+            segment_pair_list.append(current_segment)
+        # calculate the estimated time based on the segment pair list
+        estimated_arrival_time = 0.0
+        # if segment_pair_list == []:
+        #     print start_index, end_index
+        #     print "estimated time is", estimated_arrival_time
+        #     continue
+        for current_segment in segment_pair_list[1:]:
+            estimated_arrival_time += float(new_segment_df[new_segment_df.segment_pair == str(current_segment)].iloc[0].travel_duration)
+        # calculate the travel duration for the first segment pair
+        distance_stop1 = stop_dist_list[stop_dist_list.stop_id == stop_sequence[start_index]].iloc[0].dist_along_route
+        distance_stop2 = stop_dist_list[stop_dist_list.stop_id == stop_sequence[start_index + 1]].iloc[0].dist_along_route
+        distance_stops = float(distance_stop2) - float(distance_stop1)
+        distance_locations = dist_along_route - distance_stop1
+        if distance_stop1 < dist_along_route and dist_along_route < distance_stop2:
+            ratio = distance_locations / float(distance_stops)
+            if ratio > 1:
+                print "error: ", single_trip, segment_pair_list[0]
+            current_segment = segment_pair_list[0]
+            travel_duration = new_segment_df[new_segment_df.segment_pair == str(current_segment)].iloc[0].travel_duration
+            estimated_arrival_time += float(travel_duration) * float(ratio)
+        else:
+            print "error: ",  single_trip, segment_pair_list[0]
+            print distance_stop1, dist_along_route, distance_stop2
+            return
+        print single_trip, dist_along_route, stop_id, estimated_arrival_time
+        trip_id = single_trip
+        time_of_day = current_time
+        vehicle_id = str(api_df[api_df.trip_id == single_trip].iloc[0].vehicle_id)
+        result.loc[len(result)] = [trip_id, vehicle_id, time_of_day, dist_along_route, stop_num_from_call, estimated_arrival_time]
     return result
-
-
-def generate_arrival_time(date, stop_times, time, direction_id, stop_id):
-    """
-    This file is used to generate the arrival time according to the specific direction, stop_id, and the given local time
-    """
-    pass
 
 def prediction_baseline1(date, stop_times, time, direction_id, stop_id):
     """
@@ -178,7 +225,6 @@ def prediction_baseline1(date, stop_times, time, direction_id, stop_id):
     Read the data from the `new_segment_df` dataframe, which stores the average travel duration for all the segment pairs we can find the dataframe.
 
     Algorithm:
-    read the route_stop_dist.csv file
     selected_trip = set(trip_id)
     for single_trip in selected_trip:
         1. obtain the stop sequence for the single_trip
@@ -187,62 +233,84 @@ def prediction_baseline1(date, stop_times, time, direction_id, stop_id):
     """
     pass
 
-# prepare data
-segment_df = read_dataset()
-new_segment_df = obtain_segment_set(segment_df)
-stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
-stop = 201495
-direction_id = 0
-date = 20160128
-current_time = "12:20:19"
-
-# code for function: prediction_baseline1
-api_df = obtain_api_data(date, current_time, stop_times, direction_id, stop)
-api_df.to_csv("api_data.csv")
-# api_df = pd.read_csv('api_data.csv')
-# route_stop_dist = pd.read_csv('route_stop_dist.csv')
+# # prepare data
+# segment_df = read_dataset()
+# new_segment_df = obtain_segment_set(segment_df)
+# stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
 # trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
+# route_stop_dist = pd.read_csv('route_stop_dist.csv')
+# stop_id = 201495
+# direction_id = 0
+# date = 20160128
+# current_time = "12:20:19"
+#
+# estimated_arrival_time = generate_arrival_time(date, stop_times, trips, route_stop_dist, current_time, direction_id, stop_id)
+
+
+# code for function: generate_arrival_time
 # selected_trips = set(api_df.trip_id)
+# result = pd.DataFrame(columns=['trip_id', 'vehicle_id', 'time_of_day', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time'])
 # for single_trip in selected_trips:
 #     # obtain the dist_along_route and the stop_num_from_call according to the api data
 #     dist_along_route = float(api_df[api_df.trip_id == single_trip].dist_along_route)
-#     stop_num_from_call = float(api_df[api_df.trip_id == single_trip].stop_num_from_call)
+#     stop_num_from_call = int(api_df[api_df.trip_id == single_trip].stop_num_from_call)
 #     # obtain the stop_sequence
 #     stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
 #     # obtain all the related segment pairs
 #     route_id = trips[trips.trip_id == single_trip].iloc[0].route_id
 #     stop_dist_list = route_stop_dist[route_stop_dist.route_id == route_id]
-#     end_index = stop_sequence.index(stop)
+#     end_index = stop_sequence.index(stop_id)
 #     start_index = end_index - int(stop_num_from_call)
 #     segment_pair_list = []
 #     for index in range(start_index, end_index - 1):
 #         current_segment = (stop_sequence[index], stop_sequence[index + 1])
 #         segment_pair_list.append(current_segment)
 #     # calculate the estimated time based on the segment pair list
-#     estimated_arrival_time = 0
-#     if segment_pair_list == []:
-#         print start_index, end_index
-#         print "estimated time is", estimated_arrival_time
-#         continue
+#     estimated_arrival_time = 0.0
+#     # if segment_pair_list == []:
+#     #     print start_index, end_index
+#     #     print "estimated time is", estimated_arrival_time
+#     #     continue
 #     for current_segment in segment_pair_list[1:]:
-#         estimated_arrival_time += float(new_segment_df[new_segment_df.segment_pair == current_segment].iloc[0].travel_duration)
+#         estimated_arrival_time += float(new_segment_df[new_segment_df.segment_pair == str(current_segment)].iloc[0].travel_duration)
+#     # calculate the travel duration for the first segment pair
 #     distance_stop1 = stop_dist_list[stop_dist_list.stop_id == stop_sequence[start_index]].iloc[0].dist_along_route
 #     distance_stop2 = stop_dist_list[stop_dist_list.stop_id == stop_sequence[start_index + 1]].iloc[0].dist_along_route
-#     distance_stops = distance_stop2 - distance_stop1
+#     distance_stops = float(distance_stop2) - float(distance_stop1)
 #     distance_locations = dist_along_route - distance_stop1
 #     if distance_stop1 < dist_along_route and dist_along_route < distance_stop2:
 #         ratio = distance_locations / float(distance_stops)
+#         if ratio > 1:
+#             print "error: ", single_trip, segment_pair_list[0]
 #         current_segment = segment_pair_list[0]
-#         travel_duration = new_segment_df[new_segment_df.segment_pair == current_segment].iloc[0].travel_duration
+#         travel_duration = new_segment_df[new_segment_df.segment_pair == str(current_segment)].iloc[0].travel_duration
 #         estimated_arrival_time += float(travel_duration) * float(ratio)
 #     else:
-#         print single_trip, segment_pair_list[0]
+#         print "error: ",  single_trip, segment_pair_list[0]
 #         print distance_stop1, dist_along_route, distance_stop2
-#     print "estimated time is", estimated_arrival_time
+#         return
+#     print single_trip, dist_along_route, stop_id, estimated_arrival_time
+#     trip_id = single_trip
+#     time_of_day = current_time
+#     vehicle_id = str(api_df[api_df.trip_id == single_trip].iloc[0].vehicle_id)
+#     result.loc[len(result)] = [trip_id, vehicle_id, time_of_day, dist_along_route, stop_num_from_call, estimated_arrival_time]
 
 
-# if __name__ == "__main__":
-#    segment_df = read_dataset()
-#    new_segment_df = obtain_segment_set(segment_df)
-#    # # export the file
-#    # new_segment_df.to_csv('baseline1.csv')
+
+
+if __name__ == "__main__":
+   segment_df = read_dataset()
+   new_segment_df = obtain_segment_set(segment_df)
+   # # export the file
+   # new_segment_df.to_csv('baseline1.csv')
+   stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
+   trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
+   route_stop_dist = pd.read_csv('route_stop_dist.csv')
+   stop_id = 201495
+   direction_id = 0
+   date = 20160128
+   current_time = "12:20:19"
+   # api_df, trips = obtain_api_data(date, current_time, stop_times, direction_id, stop_id)
+   # api_df.to_csv("api_data.csv")
+   estimated_arrival_time = generate_arrival_time(date, stop_times, trips, route_stop_dist, current_time, direction_id, stop_id)
+   print estimated_arrival_time
