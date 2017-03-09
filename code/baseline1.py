@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 
 
-def obtain_api_data(trips, date, current_time, stop_times, direction, stop_id):
+def obtain_api_data(history, trips, date, current_time, stop_times, direction, stop_id):
     """
     This file is used to obtain the api data from the MTA.
 
@@ -37,9 +37,7 @@ def obtain_api_data(trips, date, current_time, stop_times, direction, stop_id):
             removed_trips.add(single_trip)
     selected_trips = selected_trips - removed_trips
 
-    # Extract the historical data
-    filename = 'bus_time_' + str(date) +'.csv'
-    history = pd.read_csv('../data/history/' + filename)
+
     # Filtering the trips according to the operation hour
     removed_trips = set()
     for i, single_trip in enumerate(selected_trips):
@@ -128,10 +126,10 @@ def obtain_api_data(trips, date, current_time, stop_times, direction, stop_id):
             print "stop_num_from_call < 0: ", single_trip
             continue
         result.loc[len(result)] = [single_trip, history[history.trip_id == single_trip].iloc[10].vehicle_id, dist_along_route, stop_num_from_call]
-    return result, history
+    return result
 
 
-def generate_estimated_arrival_time(date, stop_times, trips, route_stop_dist, current_time, direction_id, stop_id):
+def generate_estimated_arrival_time(api_df, date, stop_times, trips, route_stop_dist, current_time, direction_id, stop_id):
     """
     This file is used to generate the arrival time according to the specific direction, stop_id, and the given local time.
 
@@ -149,10 +147,8 @@ def generate_estimated_arrival_time(date, stop_times, trips, route_stop_dist, cu
     trip_id    stop_id    vehicle_id    time_of_day    dist_along_route    stop_num_from_call    estimated_arrival_time
      int         int         str           str         float                int/float             float
     """
-    # TODO change the api_df here or in the obtain_api_data function
-    api_df = pd.read_csv('api_data.csv')
     selected_trips = set(api_df.trip_id)
-    result = pd.DataFrame(columns=['trip_id', 'stop_id', 'vehicle_id', 'time_of_day', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time'])
+    result = pd.DataFrame(columns=['trip_id', 'stop_id', 'vehicle_id', 'time_of_day', 'date', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time'])
     for single_trip in selected_trips:
         # obtain the dist_along_route and the stop_num_from_call according to the api data
         dist_along_route = float(api_df[api_df.trip_id == single_trip].dist_along_route)
@@ -162,7 +158,11 @@ def generate_estimated_arrival_time(date, stop_times, trips, route_stop_dist, cu
         # obtain all the related segment pairs
         route_id = trips[trips.trip_id == single_trip].iloc[0].route_id
         stop_dist_list = route_stop_dist[route_stop_dist.route_id == route_id]
-        end_index = stop_sequence.index(stop_id)
+        try:
+            end_index = stop_sequence.index(stop_id)
+        except:
+            print stop_sequence
+            print "stop_id is ", stop_id, route_id
         start_index = end_index - int(stop_num_from_call)
         segment_pair_list = []
         for index in range(start_index, end_index - 1):
@@ -196,7 +196,7 @@ def generate_estimated_arrival_time(date, stop_times, trips, route_stop_dist, cu
         trip_id = single_trip
         time_of_day = current_time
         vehicle_id = str(api_df[api_df.trip_id == single_trip].iloc[0].vehicle_id)
-        result.loc[len(result)] = [trip_id, stop_id, vehicle_id, time_of_day, dist_along_route, stop_num_from_call, estimated_arrival_time]
+        result.loc[len(result)] = [trip_id, stop_id, vehicle_id, time_of_day, date, dist_along_route, stop_num_from_call, estimated_arrival_time]
     return result
 
 def generate_actual_arrival_time(estimated_arrival_time, trips, route_stop_dist):
@@ -221,7 +221,7 @@ def generate_actual_arrival_time(estimated_arrival_time, trips, route_stop_dist)
     """
 
     # Build the dataframe including the column of the actual_arrival_time
-    result = pd.DataFrame(columns=['trip_id', 'stop_id', 'vehicle_id', 'time_of_day', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time', 'actual_arrival_time'])
+    result = pd.DataFrame(columns=['trip_id', 'stop_id', 'vehicle_id', 'time_of_day', 'date', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time', 'actual_arrival_time'])
     for i in xrange(len(estimated_arrival_time)):
         # Obtain the stop_id, time_of_day, trip_id
         stop_id = str(estimated_arrival_time.iloc[i].stop_id)
@@ -272,7 +272,7 @@ def generate_actual_arrival_time(estimated_arrival_time, trips, route_stop_dist)
             distance_stop_location = float(single_route_dist[single_route_dist.stop_id == float(stop_id)].iloc[0].dist_along_route) - distance_location1
             ratio = distance_stop_location / (distance_location2 - distance_location1)
             actual_arrival_time = travel_duration.total_seconds() * ratio
-        result.loc[len(result)] = [trip_id, stop_id, vehicle_id, time_of_day, dist_along_route, stop_num_from_call, estimated_arrival_time.iloc[i].estimated_arrival_time, actual_arrival_time]
+        result.loc[len(result)] = [trip_id, stop_id, vehicle_id, time_of_day, date, dist_along_route, stop_num_from_call, estimated_arrival_time.iloc[i].estimated_arrival_time, actual_arrival_time]
     return result
 
 def generate_arrival_time():
@@ -301,16 +301,19 @@ new_segment_df = pd.read_csv('average_segment_travel_duration.csv')
 stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
 trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
 route_stop_dist = pd.read_csv('route_stop_dist.csv')
-stop_id = 201495
+#stop_id = 201495
 direction_id = 0
 date = 20160128
-current_time = "12:20:19"
-history = pd.read_csv('../data/history/' + 'bus_time_' + str(date) + '.csv')
+#current_time = "12:20:19"
+time_init = "12:00:00"
+# Extract the historical data
+filename = 'bus_time_' + str(date) +'.csv'
+history = pd.read_csv('../data/history/' + filename)
 
 # api_df = obtain_api_data(trips, date, current_time, stop_times, direction_id, stop_id)
-api_df = pd.read_csv('api_data.csv')
-estimated_arrival_time = generate_estimated_arrival_time(date, stop_times, trips, route_stop_dist, current_time, direction_id, stop_id)
-actual_arrival_time = generate_actual_arrival_time(estimated_arrival_time, trips, route_stop_dist)
+# api_df = pd.read_csv('api_data.csv')
+# estimated_arrival_time = generate_estimated_arrival_time(date, stop_times, trips, route_stop_dist, current_time, direction_id, stop_id)
+# actual_arrival_time = generate_actual_arrival_time(estimated_arrival_time, trips, route_stop_dist)
 
 # WORKING generate_arrival_time
 """
@@ -319,12 +322,32 @@ example:
 time1 = datetime.strptime('12:00:00', '%H:%M:%S') # time1 is 12:00:00
 delta = timedelta(0, 300) # delta is 300 seconds (5 minutes)
 time2 = time1 + delta # time2 is 12:05:00
+
+algorithm:
+read the api_df from api_data1.csv
+extract the date list from api_df
+result_list = []
+for each date in date_list:
+    obtain the single_api_df
+    obtain the estimated_arrival_time
+    obtain the actual_arrival_time
+    result_list.append(actual_arrival_time)
+result = pd.condat(result_list)
+
 """
-
-
-
-
-
+# TODO generate_arrival_time(time_init, route_stop_dist)
+# We should simply read the api_data file and use that to predict
+api_df = pd.read_csv('api_data1.csv')
+date_set = set(api_df.date)
+date_list = list(date_set)
+date_list.sort()
+result_list = []
+for date in date_list:
+    single_api_df = api_df[api_df.date]
+    estimated_arrival_time = generate_estimated_arrival_time(api_df, date, stop_times, trips, route_stop_dist, current_time, direction_id, stop_id)
+    actual_arrival_time = generate_actual_arrival_time(estimated_arrival_time, trips, route_stop_dist)
+    result_list.append(actual_arrival_time)
+result = pd.concat(result_list)
 
 
 
