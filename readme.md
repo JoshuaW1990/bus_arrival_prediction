@@ -1,6 +1,7 @@
 # ReadMe
 
-https://joshuaw1990.github.io/2017/03/08/Project-Overview-bus-arrival-time-prediction/#more
+Link to Blog: https://joshuaw1990.github.io/2017/03/08/Project-Overview-bus-arrival-time-prediction/
+
 This is the advanced project for the master program in Tufts University.
 
 

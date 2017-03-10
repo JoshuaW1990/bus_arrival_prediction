@@ -152,7 +152,7 @@ time_init1 = "12:00:00"
 time_init2 = "18:00:00"
 
 #####################################################################
-# test: debug
+# test: debug start
 #####################################################################
 # stop_id =  203613.0
 # route_id =  'X11'
@@ -163,11 +163,10 @@ time_init2 = "18:00:00"
 # print "complete!"
 
 #####################################################################
-# test: debug
+# test: debug end
 #####################################################################
 
-# api_data = obtain_api_data(history, trips, current_time, stop_times, direction_id, stop_id)
-# TODO generate_complete_api_input()
+
 """
 Algorithm:
 for date in date_list:
