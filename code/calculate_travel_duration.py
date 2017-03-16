@@ -38,7 +38,7 @@ def obtain_segment_set_baseline2(segment_df):
     """
 
     :param segment_df: the dataframe for storing the average travel duration according to the requirement.
-            
+
     :return:
     """
 
