@@ -1,5 +1,3 @@
-# This file is used for the baseline 1 algorithm
-
 """
 This file is composed of two different parts. The first part is used to read the historical and shedule data and extract the api information (distance, current time, stop_num_from_call). The second part is used to read the baseline1.csv file and predict according to the average segment pair travel duration.
 """
@@ -360,7 +358,6 @@ for each date in date_list:
 result = pd.condat(result_list)
 
 """
-# TODO generate_arrival_time(time_init, route_stop_dist)
 # We should simply read the api_data file and use that to predict
 api_df = pd.read_csv('api_data.csv')
 date_set = set(api_df.date)

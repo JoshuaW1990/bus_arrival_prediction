@@ -139,7 +139,7 @@ def generate_complete_api_input(date_list, route_list):
 
 
 # test
-date_list = range(20160125, 20160130)
+date_list = range(20160129, 20160130)
 route_list = list(set())
 new_segment_df = pd.read_csv('average_segment_travel_duration.csv')
 stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
@@ -198,13 +198,13 @@ for date in date_list:
             stop_set.add(current_stop)
         for stop_id in stop_set:
             print "route_id = ",  route_id, "stop_id = ", stop_id
-            for i in range(0, 7):
-                delta = timedelta(0, i * 300)
-                current_time = time_start1 + delta
-                current_time = str(current_time)[11:19]
-                print "current time: ", current_time
-                api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id, stop_id)
-                result_list.append(api_data)
+            # for i in range(0, 7):
+            #     delta = timedelta(0, i * 300)
+            #     current_time = time_start1 + delta
+            #     current_time = str(current_time)[11:19]
+            #     print "current time: ", current_time
+            #     api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id, stop_id)
+            #     result_list.append(api_data)
             for i in range(0, 7):
                 delta = timedelta(0, i * 300)
                 current_time = time_start2 + delta
@@ -213,4 +213,4 @@ for date in date_list:
                 api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id, stop_id)
                 result_list.append(api_data)
 result = pd.concat(result_list)
-result.to_csv('api_data.csv')
+result.to_csv('new_api_data.csv')

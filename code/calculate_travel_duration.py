@@ -11,11 +11,11 @@ def read_dataset():
     """
     read the data.csv file to obtain the segment dataset
     """
-    segment_df = pd.read_csv('data.csv')
+    segment_df = pd.read_csv('improved_segment.csv')
     return segment_df
 
 # Obtain the set of the segment_pair
-def obtain_segment_set(segment_df):
+def obtain_segment_set_baseline1(segment_df):
     # Loopin through all the segment in the set and calculate the average travel duration
     # Since during calculating the travel duration, according to the first algorithm, many unecessary information will be ignored, we will buid a much simpler dataframe for storing the result
     # The format of the new dataframe:
@@ -32,8 +32,18 @@ def obtain_segment_set(segment_df):
         new_segment_df.loc[len(new_segment_df)] = [segment_start, segment_end, segment_pair, average_travel_duration]
     return new_segment_df
 
+
+# Obtain the set of the segment_pair with consideration of the weather and the rush hour
+def obtain_segment_set_baseline2(segment_df):
+    """
+
+    :param segment_df: the dataframe for storing the average travel duration according to the requirement.
+            
+    :return:
+    """
+
 if __name__ == "__main__":
     segment_df = read_dataset()
-    new_segment_df = obtain_segment_set(segment_df)
+    new_segment_df = obtain_segment_set_baseline1(segment_df)
     # export the file
     new_segment_df.to_csv('average_segment_travel_duration.csv')

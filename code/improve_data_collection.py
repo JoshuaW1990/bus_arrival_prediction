@@ -14,12 +14,12 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
- 
+
 
 
 # read the data.csv file at first
 def read_data():
-    segment_df = pd.read_csv('data.csv') 
+    segment_df = pd.read_csv('original_segment.csv')
     stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
     return segment_df, stop_times
 
@@ -52,11 +52,11 @@ def improve_dataset_method1():
                     calculate the number of skipped travel duration within this segment
                     use the average value as the travel duration and add the stop arrival time for each skipped stops
                     add the segment_pair into the new dataframe as the result
-                    
+
     """
     segment_df, stop_times = read_data()
     print "complete reading the segment data and the stop_times.txt file"
-    
+
     trips = set(segment_df.trip_id)
     df_list = []
     for single_trip in trips:
@@ -69,7 +69,7 @@ def improve_dataset_method1():
     result = pd.concat(df_list)
     return result
 
-                    
+
 
 
 
@@ -104,10 +104,10 @@ def improve_dataset_method1_unit(single_trip, date, stop_sequence, segment_df):
                 segment_end = tmp_total_stops[j + 1]
                 segment_pair = (segment_start, segment_end)
                 previous_arrival_time = current_segmen_pair.iloc[i - 1].time_of_day
-                estimated_arrival_time = datetime.strptime(previous_arrival_time, '%H:%M:%S') 
+                estimated_arrival_time = datetime.strptime(previous_arrival_time, '%H:%M:%S')
                 for count in range(j):
                     estimated_arrival_time += estimated_travel_time
-                time_of_day = str(estimated_arrival_time)[11:19] 
+                time_of_day = str(estimated_arrival_time)[11:19]
                 day_of_week = current_segmen_pair.iloc[0].day_of_week
                 weather = current_segmen_pair.iloc[0].weather
                 trip_id = single_trip
@@ -120,4 +120,4 @@ def improve_dataset_method1_unit(single_trip, date, stop_sequence, segment_df):
 
 if __name__=="__main__":
     improved_dataset = improve_dataset_method1()
-    improved_dataset.to_csv('data1.csv')
+    improved_dataset.to_csv('improved_segment.csv')

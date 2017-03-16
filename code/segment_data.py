@@ -218,5 +218,5 @@ def generate_dataframe(selected_trips, date_start, date_end):
 
 if __name__=="__main__":
 	selected_trips = select_trip_list(path, 2)
-	segment_df = generate_dataframe(selected_trips, 20160104, 20160131)
-	segment_df.to_csv('data.csv')
+	segment_df = generate_dataframe(selected_trips, 20160104, 20160123)
+	segment_df.to_csv('original_segment.csv')
