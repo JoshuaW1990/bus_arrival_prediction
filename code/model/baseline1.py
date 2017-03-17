@@ -127,7 +127,7 @@ def obtain_api_data(history, trips, date, current_time, stop_times, direction, s
     return result
 
 
-def generate_estimated_arrival_time(api_df, date, stop_times, trips, route_stop_dist, direction_id):
+def generate_estimated_arrival_time(new_segment_df, api_df, date, stop_times, trips, route_stop_dist, direction_id):
     """
     This file is used to generate the arrival time according to the specific direction, stop_id, and the given local time.
 
@@ -142,8 +142,8 @@ def generate_estimated_arrival_time(api_df, date, stop_times, trips, route_stop_
 
     Input:
     Output: dataframe
-    trip_id    stop_id    vehicle_id    time_of_day    dist_along_route    stop_num_from_call    estimated_arrival_time
-     int         int         str           str         float                int/float             float
+    trip_id    route_id    stop_id    vehicle_id    time_of_day    date    dist_along_route    stop_num_from_call    estimated_arrival_time
+     int         int        int         str           str          int         float                int/float             float
     """
     result = pd.DataFrame(columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'date', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time'])
     for i in xrange(len(api_df)):
