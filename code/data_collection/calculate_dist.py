@@ -19,7 +19,7 @@ def read_data(route_num = None, direction_id = 0):
     Output: Three different dataframe:
     trips, stop_times, history. All of these three data should have been filtered according to the trip_id and route_id
     """
-    path = '/Users/junwang/Documents/Github/bus_arrival_prediction/data/GTFS/gtfs/'
+    path = '../../data/GTFS/gtfs/'
     trips = pd.read_csv(path + 'trips.txt')
     stop_times = pd.read_csv(path + 'stop_times.txt')
     # Obtain the filterd trips dataframe
@@ -34,18 +34,19 @@ def read_data(route_num = None, direction_id = 0):
     selected_trips = set(list(result_trips.trip_id))
     result_stop_times = stop_times[stop_times.trip_id.isin(selected_trips)]
     # Obtain the filtered history dataframe
-    file_list = os.listdir('/Users/junwang/Documents/Github/bus_arrival_prediction/data/history/')
+    file_list = os.listdir('../../data/history/')
+    file_list.sort()
     history_list = []
     for single_file in file_list:
         if not single_file.endswith('.csv'):
             continue
         else:
-            current_history = pd.read_csv('/Users/junwang/Documents/Github/bus_arrival_prediction/data/history/' + single_file)
+            current_history = pd.read_csv('../../data/history/' + single_file)
             tmp_history = current_history[current_history.trip_id.isin(selected_trips)]
             if len(tmp_history) == 0:
                 continue
             else:
-                print single_file
+                print "historical file name: ", single_file
                 history_list.append(tmp_history)
     result_history = pd.concat(history_list)
     return result_trips, result_stop_times, result_history
@@ -63,6 +64,7 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
     selected_routes = set(trips.route_id)
     # Looping from each route to obtain the distance of each stops
     for single_route in selected_routes:
+        print "route name: ", single_route
         selected_trips = set(trips[trips.route_id == single_route].trip_id)
         stop_sequence = list(stop_times[stop_times.trip_id == list(selected_trips)[0]].stop_id)
         result.loc[len(result)] = [single_route, int(direction_id), int(stop_sequence[0]), 0.0]
@@ -80,6 +82,7 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
                     current_dist.append(current_history.iloc[i].dist_along_route)
                 dist_along_route = sum(current_dist) / float(len(current_dist))
             result.loc[len(result)] = [single_route, int(direction_id), int(stop_id), dist_along_route]
+    result.to_csv('original_route_stop_dist.csv')
     # Since some of the stops might not record, it is necessary to check the dataframe again.
     count = 1
     for i in range(1, len(result) - 1):

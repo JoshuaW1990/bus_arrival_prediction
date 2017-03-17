@@ -9,7 +9,6 @@ str         float          int         int          str        str              
 """
 
 import pandas as pd
-import numpy as np
 import random
 from datetime import datetime, timedelta
 
@@ -140,7 +139,6 @@ def generate_complete_api_input(date_list, route_list):
 
 # test
 date_list = range(20160129, 20160130)
-route_list = list(set())
 new_segment_df = pd.read_csv('average_segment_travel_duration.csv')
 stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
 trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
