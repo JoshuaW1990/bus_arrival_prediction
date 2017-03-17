@@ -98,6 +98,6 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
     return result
 
 if __name__ == "__main__":
-    trips, stop_times, history = read_data(route_num)
+    trips, stop_times, history = read_data()
     route_stop_dist = calculate_stop_distance(trips, stop_times, history)
     route_stop_dist.to_csv('route_stop_dist.csv')
