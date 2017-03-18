@@ -46,7 +46,7 @@ def filter_history_data(date_start, date_end, selected_trips):
 	date_start, date_end:    int, yyyymmdd, ex: 20160109
 	"""
 	# List the historical file
-	path = '/Users/junwang/Documents/Github/bus_arrival_prediction/data/history/'
+	path = '../../data/history/'
 	dirs = os.listdir(path)
 	file_list = []
 	for dir in dirs:
