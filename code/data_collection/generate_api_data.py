@@ -212,3 +212,5 @@ for date in date_list:
                 result_list.append(api_data)
 result = pd.concat(result_list)
 result.to_csv('api_data.csv')
+
+
