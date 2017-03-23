@@ -178,8 +178,6 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
     return result
 
 
-trips, stop_times, history = read_data(route_num=3)
-route_stop_dist = calculate_stop_distance(trips, stop_times, history)
 
 
 #################################################################################################################
