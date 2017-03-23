@@ -180,8 +180,6 @@ def calculate_travel_duration(single_trip, full_history):
     segment_start    segment_end    segment_pair   time_of_day    day_of_week    date    weather    trip_id    travel_duration
     """
     history = full_history[full_history.trip_id == single_trip]
-    print "trip id: ", single_trip
-    print "history length: ", len(history)
     if len(history) == 0:
         return None
     date_set = set(list(history.service_date))
@@ -207,7 +205,9 @@ def generate_dataframe(selected_trips, date_start, date_end):
     """
     full_history = filter_history_data(date_start, date_end, selected_trips)
     result_list = []
-    for single_trip in selected_trips:
+    for i, single_trip in enumerate(selected_trips):
+        if i % 1000 == 0:
+            print i
         tmp_segment_df = calculate_travel_duration(single_trip, full_history)
         if tmp_segment_df is None:
             continue
@@ -322,10 +322,19 @@ def improve_dataset_single_trip(single_trip, date, stop_sequence, segment_df):
 # development debug
 #######################################################################################################################
 path = '../../data/GTFS/gtfs/'
-selected_trips = select_trip_list(path)
-#full_history =filter_history_data(20160104, 20160123, selected_trips)
-segment_df = generate_dataframe(selected_trips, 20160104, 20160110)
 
+
+stop_times = pd.read_csv(path + 'stop_times.txt')
+selected_trips = select_trip_list(path)
+selected_trips = ['CA_A6-Saturday-051500_MISC_421']
+print len(selected_trips)
+#full_history =filter_history_data(20160104, 20160123, selected_trips)
+segment_df = generate_dataframe(selected_trips, 20160104, 20160124)
+segment_df.to_csv('original_segment.csv')
+print "complete generating the original segment dataframe"
+# segment_df = pd.read_csv('original_segment.csv')
+new_segment_df = improve_dataset(segment_df, stop_times)
+new_segment_df.to_csv('segment.csv')
 
 
 # if __name__=="__main__":

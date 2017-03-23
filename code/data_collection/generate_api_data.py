@@ -130,33 +130,84 @@ def obtain_api_data(history, trips, route_id, current_time, stop_times, directio
         print "within single data, length of the api data: ", len(result)
     return result
 
-def generate_complete_api_input(date_list, route_list):
+def generate_complete_api_input(date_list, route_set, route_stop_dist, stop_times):
     """
     Generate the complete api input data according to a specific date list, route list
+
+    Algorithm:
+    for date in date_list:
+        read the history file for the date
+        for each route in route_set
+            randomly pick four stops from the stop_list for the route
+            for each stop in stops:
+                for i in range():
+                    generate current time
+                    obtain the api_data
+                    result_list.append(api_data)
+    result = pd.concat(result_list)
     """
-    pass
+    single_route_stop_dist = route_stop_dist[route_stop_dist.route_id.isin(route_set)]
+    time_start1 = datetime.strptime(time_init1, '%H:%M:%S')
+    time_start2 = datetime.strptime(time_init2, '%H:%M:%S')
+    result_list = []
+    for date in date_list:
+        # Extract the historical data
+        filename = 'bus_time_' + str(date) + '.csv'
+        print filename
+        history = pd.read_csv('../../data/history/' + filename)
+        for route_id in route_set:
+            stop_sequence = list(single_route_stop_dist[single_route_stop_dist.route_id == route_id].stop_id)
+            stop_set = set()
+            while len(stop_set) < 4:
+                current_stop = stop_sequence[random.randint(2, len(stop_sequence) - 3)]
+                stop_set.add(current_stop)
+            for stop_id in stop_set:
+                print "route_id = ", route_id, "stop_id = ", stop_id
+                for i in range(0, 7):
+                    delta = timedelta(0, i * 300)
+                    current_time = time_start1 + delta
+                    current_time = str(current_time)[11:19]
+                    print "current time: ", current_time
+                    api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id,
+                                               stop_id)
+                    result_list.append(api_data)
+                for i in range(0, 7):
+                    delta = timedelta(0, i * 300)
+                    current_time = time_start2 + delta
+                    current_time = str(current_time)[11:19]
+                    print "current time: ", current_time
+                    api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id,
+                                               stop_id)
+                    result_list.append(api_data)
+    result = pd.concat(result_list)
+    return result
+
 
 
 # test
-date_list = range(20160129, 20160130)
+date_list = range(20160125, 20160130)
 # new_segment_df = pd.read_csv('average_segment_travel_duration.csv')
 stop_times = pd.read_csv('../../data/GTFS/gtfs/stop_times.txt')
 trips = pd.read_csv('../../data/GTFS/gtfs/trips.txt')
 route_stop_dist = pd.read_csv('route_stop_dist.csv')
-route_set = set(route_stop_dist.route_id)
+# route_set = set(route_stop_dist.route_id)
+route_set = set(['X42', 'S66'])
 #stop_id = 201495
 direction_id = 0
 time_init1 = "12:00:00"
 time_init2 = "18:00:00"
 
+api_data = generate_complete_api_input(date_list, route_set, route_stop_dist, stop_times)
+api_data.to_csv('test_api_data.csv')
+
 #####################################################################
 # test: debug start
 #####################################################################
-# stop_id =  203613.0
-# route_id =  'X11'
-# filename = 'bus_time_20160128.csv'
+# stop_id = 905007.0
+# route_id = 'X44'
+# filename = 'bus_time_20160125.csv'
 # history = pd.read_csv('../../data/history/' + filename)
-# current_time = '12:00:00'
+# current_time = '18:30:00'
 # api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id, stop_id)
 # print "complete!"
 
@@ -164,53 +215,54 @@ time_init2 = "18:00:00"
 # test: debug end
 #####################################################################
 
-
 """
+generate_complete_api_input_method2(date_list, route_set, route_stop_dist, stop_times)
 Algorithm:
-for date in date_list:
-    read the history file for the date
-    for each route in route_set
-        randomly pick four stops from the stop_list for the route
+    filter the route_stop_dist from the route_set
+    generate the stop id set from the filtered route_stop_dist
+    obtain the 4 stop_id by random
+    for date in date_list:
+        read the history file for the date
         for each stop in stops:
             for i in range():
                 generate current time
                 obtain the api_data
                 result_list.append(api_data)
-result = pd.concat(result_list)
+    result = pd.concat(result_list)
 """
-
-single_route_stop_dist = route_stop_dist[route_stop_dist.route_id.isin(route_set)]
-time_start1 = datetime.strptime(time_init1, '%H:%M:%S')
-time_start2 = datetime.strptime(time_init2, '%H:%M:%S')
-result_list = []
-for date in date_list:
-    # Extract the historical data
-    filename = 'bus_time_' + str(date) +'.csv'
-    print filename
-    history = pd.read_csv('../../data/history/' + filename)
-    for route_id in route_set:
-        stop_sequence = list(single_route_stop_dist[single_route_stop_dist.route_id == route_id].stop_id)
-        stop_set = set()
-        while len(stop_set) < 4:
-            current_stop = stop_sequence[random.randint(2, len(stop_sequence) - 3)]
-            stop_set.add(current_stop)
-        for stop_id in stop_set:
-            print "route_id = ",  route_id, "stop_id = ", stop_id
-            for i in range(0, 7):
-                delta = timedelta(0, i * 300)
-                current_time = time_start1 + delta
-                current_time = str(current_time)[11:19]
-                print "current time: ", current_time
-                api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id, stop_id)
-                result_list.append(api_data)
-            for i in range(0, 7):
-                delta = timedelta(0, i * 300)
-                current_time = time_start2 + delta
-                current_time = str(current_time)[11:19]
-                print "current time: ", current_time
-                api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id, stop_id)
-                result_list.append(api_data)
-result = pd.concat(result_list)
-result.to_csv('api_data.csv')
-
-
+#
+#
+# time_start1 = datetime.strptime(time_init1, '%H:%M:%S')
+# time_start2 = datetime.strptime(time_init2, '%H:%M:%S')
+# result_list = []
+# # filter the route_stop_dist from the route_set
+# single_route_stop_dist = route_stop_dist[route_stop_dist.route_id.isin(route_set)]
+# # generate the stop id set from the filtered route_stop_dist
+# stop_list = sorted(list(set(single_route_stop_dist.stop_id)))
+# # obtain the 4 stop_id by random
+# selected_stops = []
+# for i in range(4):
+#     current_stop = stop_list[random.randint(0, len(stop_list) - 1)]
+#     selected_stops.append(current_stop)
+# for date in date_list:
+#     # Extract the historical data
+#     filename = 'bus_time_' + str(date) + '.csv'
+#     print filename
+#     history = pd.read_csv('../../data/history/' + filename)
+#     for stop_id in selected_stops:
+#         for i in range(0, 7):
+#             delta = timedelta(0, i * 300)
+#             current_time = time_start1 + delta
+#             current_time = str(current_time)[11:19]
+#             print "current time: ", current_time
+#             api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id,
+#                                        stop_id)
+#             result_list.append(api_data)
+#         for i in range(0, 7):
+#             delta = timedelta(0, i * 300)
+#             current_time = time_start2 + delta
+#             current_time = str(current_time)[11:19]
+#             print "current time: ", current_time
+#             api_data = obtain_api_data(history, trips, route_id, current_time, stop_times, direction_id,
+#                                        stop_id)
+#             result_list.append(api_data)

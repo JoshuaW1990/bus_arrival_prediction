@@ -1,36 +1,1499 @@
-0
-50
-100
-150
-200
-250
-300
-350
-400
-CA_A6-Weekday-SDon-041000_X14_308
-200652 200652 5.36516129032
-stop_num_from_call < 0:  CA_A6-Weekday-SDon-041000_X14_308
-CA_A6-Weekday-SDon-036300_X14_304
-402143 402143 22.2282258065
-stop_num_from_call < 0:  CA_A6-Weekday-SDon-036300_X14_304
-CA_A6-Weekday-SDon-042000_X14_309
-201499 201499 10.4368253968
-stop_num_from_call < 0:  CA_A6-Weekday-SDon-042000_X14_309
-CA_A6-Weekday-SDon-037800_X14_305
-903205 903205 337.220645161
-stop_num_from_call < 0:  CA_A6-Weekday-SDon-037800_X14_305
-CA_A6-Weekday-SDon-114000_S4898_316
-CA_A6-Weekday-SDon-040500_S4898_301
-201507 201511 636.506808511
-stop_num_from_call < 0:  CA_A6-Weekday-SDon-040500_S4898_301
-CA_A6-Weekday-SDon-034800_X14_303
-404300 404300 79.0688888889
-stop_num_from_call < 0:  CA_A6-Weekday-SDon-034800_X14_303
-CA_A6-Weekday-SDon-109500_S4898_311
-CA_A6-Weekday-SDon-111000_S4898_318
-CA_A6-Weekday-SDon-039000_X14_306
-903205 903205 537.47875
-stop_num_from_call < 0:  CA_A6-Weekday-SDon-039000_X14_306
-CA_A6-Weekday-SDon-112500_MISC_533
-MA_A6-Weekday-SDon-043000_MISC_651
-203809 203809 17.7348387097
+/Users/junwang/miniconda2/envs/py27/bin/python2.7 /Users/junwang/PycharmProjects/bus_arrival_prediction/code/data_collection/generate_api_data.py
+bus_time_20160125.csv
+route_id =  S66 stop_id =  200536.0
+current time:  12:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  3
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-039000_S66_301
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+current time:  12:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  18:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-073500_MISC_430
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+route_id =  S66 stop_id =  200531.0
+current time:  12:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  3
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-039000_S66_301
+CA_A6-Weekday-SDon-040500_MISC_421
+current time:  12:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  18:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-073500_MISC_430
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+route_id =  S66 stop_id =  203052.0
+current time:  12:00:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  3
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-039000_S66_301
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+current time:  12:05:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:10:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:15:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:20:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:25:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  12:30:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  18:00:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-073500_MISC_430
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:05:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:10:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:15:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:20:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:25:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:30:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+route_id =  S66 stop_id =  202615.0
+current time:  12:00:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  3
+CA_A6-Weekday-SDon-037500_MISC_441
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  3
+current time:  12:05:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+current time:  12:10:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+current time:  12:15:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+current time:  12:20:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+current time:  12:25:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+current time:  12:30:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+current time:  18:00:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-073500_MISC_430
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:05:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:10:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:15:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:20:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:25:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:30:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  2
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-076500_MISC_438
+route_id =  X42 stop_id =  203603.0
+current time:  12:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-037000_X1242_606
+current time:  12:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  18:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+route_id =  X42 stop_id =  901171.0
+current time:  12:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-037000_X1242_606
+current time:  12:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  18:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+route_id =  X42 stop_id =  404877.0
+current time:  12:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  5
+current time:  12:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+current time:  12:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+current time:  12:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+current time:  12:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+current time:  12:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+current time:  12:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+current time:  18:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+route_id =  X42 stop_id =  901111.0
+current time:  12:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  5
+current time:  12:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  12:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+current time:  18:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+bus_time_20160126.csv
+route_id =  S66 stop_id =  200538.0
+current time:  12:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  18:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  5
+CA_A6-Weekday-SDon-076500_MISC_438
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+current time:  18:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+route_id =  S66 stop_id =  200619.0
+current time:  12:00:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+within single data, length of the api data:  2
+current time:  12:05:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:10:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:15:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:20:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:25:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:30:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-044600_S66_302
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  2
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  3
+current time:  18:00:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:05:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:10:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:15:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:20:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:25:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  5
+CA_A6-Weekday-SDon-076500_MISC_438
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+current time:  18:30:00
+length of the selected_trips:  128
+length of the selected_trips:  128
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+route_id =  S66 stop_id =  200525.0
+current time:  12:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-043500_MISC_420
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-043500_MISC_420
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  18:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  5
+CA_A6-Weekday-SDon-076500_MISC_438
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+current time:  18:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+route_id =  S66 stop_id =  200534.0
+current time:  12:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-037500_MISC_441
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  7
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+CA_A6-Weekday-SDon-039000_S66_301
+current time:  12:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  6
+CA_A6-Weekday-SDon-043500_MISC_420
+within single data, length of the api data:  1
+CA_A6-Weekday-SDon-040500_MISC_421
+CA_A6-Weekday-SDon-042000_MISC_427
+current time:  18:00:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:05:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+within single data, length of the api data:  1
+current time:  18:10:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:15:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:20:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-076500_MISC_438
+current time:  18:25:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  5
+CA_A6-Weekday-SDon-076500_MISC_438
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+current time:  18:30:00
+length of the selected_trips:  127
+length of the selected_trips:  127
+length of the selected_trips:  4
+CA_A6-Weekday-SDon-079500_S66_301
+within single data, length of the api data:  1
+route_id =  X42 stop_id =  905056.0
+current time:  12:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-037000_X1242_606
+current time:  12:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-037000_X1242_606
+current time:  12:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-037000_X1242_606
+current time:  12:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-037000_X1242_606
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-038500_X1242_609
+current time:  12:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-037000_X1242_606
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-038500_X1242_609
+current time:  12:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-037000_X1242_606
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+current time:  12:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  7
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-044500_X1242_621
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-037000_X1242_606
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-038500_X1242_609
+current time:  18:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+route_id =  X42 stop_id =  203603.0
+current time:  12:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-037000_X1242_606
+current time:  12:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-037000_X1242_606
+current time:  12:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-037000_X1242_606
+current time:  12:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-037000_X1242_606
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+current time:  12:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-037000_X1242_606
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+current time:  12:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-037000_X1242_606
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+current time:  12:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  7
+MA_A6-Weekday-SDon-040500_X1242_614
+MA_A6-Weekday-SDon-041500_X1242_616
+MA_A6-Weekday-SDon-044500_X1242_621
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-037000_X1242_606
+MA_A6-Weekday-SDon-039500_X1242_611
+MA_A6-Weekday-SDon-043000_MISC_658
+MA_A6-Weekday-SDon-038500_X1242_609
+current time:  18:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+route_id =  X42 stop_id =  402227.0
+current time:  12:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  4
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  4
+current time:  12:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  5
+current time:  12:10:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  5
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  5
+current time:  12:15:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  5
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  6
+current time:  12:20:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  5
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  6
+current time:  12:25:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  6
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  5
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  6
+current time:  12:30:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  7
+MA_A6-Weekday-SDon-040500_X1242_614
+within single data, length of the api data:  1
+MA_A6-Weekday-SDon-041500_X1242_616
+within single data, length of the api data:  2
+MA_A6-Weekday-SDon-044500_X1242_621
+within single data, length of the api data:  3
+MA_A6-Weekday-SDon-037000_X1242_606
+within single data, length of the api data:  4
+MA_A6-Weekday-SDon-039500_X1242_611
+within single data, length of the api data:  5
+MA_A6-Weekday-SDon-043000_MISC_658
+within single data, length of the api data:  6
+MA_A6-Weekday-SDon-038500_X1242_609
+within single data, length of the api data:  7
+current time:  18:00:00
+length of the selected_trips:  19
+length of the selected_trips:  19
+length of the selected_trips:  0
+current time:  18:05:00
+length of the selected_trips:  19
+length of the selected_trips:  19
