@@ -125,9 +125,9 @@ def read_data(route_num=None, direction_id=0):
     return result_trips, result_stop_times, result_history
 
 
-def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
+def calculate_stop_distance(trips, stop_times, history, direction_id=0):
     """
-    Calculate the distance of each stop with its inital stop. Notice that the dist_along_route is the distance between the next_stop and the initial stop
+    Calculate the distance of each stop with its initial stop. Notice that the dist_along_route is the distance between the next_stop and the initial stop
     Input: three filtered dataframe, trips, stop_times, history
     Output: One dataframe, route_stop_dist
     The format of the route_stop_dist:
@@ -152,8 +152,8 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
                 dist_along_route = -1.0
             else:
                 current_dist = []
-                for i in range(len(current_history)):
-                    current_dist.append(current_history.iloc[i].dist_along_route)
+                for j in range(len(current_history)):
+                    current_dist.append(current_history.iloc[j].dist_along_route)
                 dist_along_route = sum(current_dist) / float(len(current_dist))
             result.loc[len(result)] = [single_route, int(direction_id), int(stop_id), dist_along_route]
     result.to_csv('original_route_stop_dist.csv')
@@ -173,7 +173,9 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
                     remove_route_list.add(result.iloc[i - 1].route_id)
                 distance = (float(result.iloc[i].dist_along_route) - float(prev)) / float(count)
                 while count > 1:
-                    result.iloc[i - count + 1, result.columns.get_loc('dist_along_route')] = result.iloc[i - count].dist_along_route + float(distance)
+                    result.iloc[i - count + 1, result.columns.get_loc('dist_along_route')] = result.iloc[
+                                                                                                 i - count].dist_along_route + float(
+                        distance)
                     count -= 1
             else:
                 continue
@@ -182,25 +184,60 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
     return result
 
 
+#################################################################################################################
+#                                        segment.csv                                                            #
+#################################################################################################################
+"""
+Generate the orgininal segment data including the travel duration. Improve the segment data by adding back the skipped
+"""
 
+
+def select_trip_list(num_route=None, direction_id=0):
+    """
+    Generate the list of the trip id for the selected routes
+    :param num_route: the number of the selected routes. If the num_route is None, then all the route id will be selected
+    :param direction_id: the direction id can be 0 or 1
+    :return: the list of the trip_id
+    """
+    # Read the GTFS data
+    # data source: MTA, state island, Jan, 4, 2016
+    trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
+    route_stop_dist = pd.read_csv('route_stop_dist.csv')
+
+    # select a specific route and the corresponding trips
+    route_list = list(route_stop_dist.route_id)
+    non_dup_route_list = sorted(list(set(route_list)))
+    if num_route is None:
+        select_routes = non_dup_route_list
+    else:
+        select_routes = non_dup_route_list[:num_route]
+    selected_trips = []
+    for route in select_routes:
+        selected_trips += list(trips[(trips.route_id == route) & (trips.direction_id == direction_id)].trip_id)
+    return selected_trips
 
 #################################################################################################################
-#                                route_stop_dist.csv                                                            #
+#                                    main function                                                              #
 #################################################################################################################
 
 
-if __name__ == '__main__':
-    file_list = os.listdir('./')
-    # download weather information
-    if 'weather.csv' not in file_list:
-        print "download weather.csv file"
-        download_weather('20160101', '20160131')
-        print "complete downloading weather information"
-    # export the route dist data
-    if 'route_stop_dist.csv' not in file_list:
-        print "export route_stop_dist.csv file"
-        trips, stop_times, history = read_data()
-        route_stop_dist = calculate_stop_distance(trips, stop_times, history)
-        route_stop_dist.to_csv('route_stop_dist.csv')
-        print "complete exporting the route_stop_dist.csv file"
-
+# if __name__ == '__main__':
+#     file_list = os.listdir('./')
+#     # download weather information
+#     if 'weather.csv' not in file_list:
+#         print "download weather.csv file"
+#         download_weather('20160101', '20160131')
+#         print "complete downloading weather information"
+#     # export the route dist data
+#     if 'route_stop_dist.csv' not in file_list:
+#         print "export route_stop_dist.csv file"
+#         trips, stop_times, history = read_data()
+#         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
+#         route_stop_dist.to_csv('route_stop_dist.csv')
+#         print "complete exporting the route_stop_dist.csv file"
+#     # export the segment data
+#     if 'segment.csv' not in file_list:
+#         print "export segment.csv file"
+#
+#         print "complete exporting the segment.csv file"
+#     print "complete data collection"
