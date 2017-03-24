@@ -67,8 +67,6 @@ def download_weather(date_start, date_end):
         for item in result:
             spamwriter.writerow(item)
 
-    print "complete downloading weather information"
-
     return result
 
 
@@ -160,8 +158,10 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
             result.loc[len(result)] = [single_route, int(direction_id), int(stop_id), dist_along_route]
     result.to_csv('original_route_stop_dist.csv')
     # Since some of the stops might not record, it is necessary to check the dataframe again.
+    # Because of the bug or other reasons, some of the routes have a long jump in the stop list, we should remove the corresponding stop list
     count = 1
     prev = 0
+    remove_route_list = set()
     for i in range(1, len(result) - 1):
         if result.iloc[i].dist_along_route == -1:
             if result.iloc[i - 1].dist_along_route != -1:
@@ -169,12 +169,16 @@ def calculate_stop_distance(trips, stop_times, history, direction_id = 0):
             count += 1
         else:
             if count != 1:
+                if count >= 4:
+                    remove_route_list.add(result.iloc[i - 1].route_id)
                 distance = (float(result.iloc[i].dist_along_route) - float(prev)) / float(count)
                 while count > 1:
                     result.iloc[i - count + 1, result.columns.get_loc('dist_along_route')] = result.iloc[i - count].dist_along_route + float(distance)
                     count -= 1
             else:
                 continue
+    result.to_csv('original_improve_route_stop_dist.csv')
+    result = result[~result.route_id.isin(remove_route_list)]
     return result
 
 
@@ -191,8 +195,12 @@ if __name__ == '__main__':
     if 'weather.csv' not in file_list:
         print "download weather.csv file"
         download_weather('20160101', '20160131')
+        print "complete downloading weather information"
     # export the route dist data
     if 'route_stop_dist.csv' not in file_list:
         print "export route_stop_dist.csv file"
         trips, stop_times, history = read_data()
         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
+        route_stop_dist.to_csv('route_stop_dist.csv')
+        print "complete exporting the route_stop_dist.csv file"
+
