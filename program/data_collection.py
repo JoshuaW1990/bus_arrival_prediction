@@ -407,10 +407,8 @@ def generate_original_dataframe(selected_trips, date_start, date_end, full_histo
         full_history = filter_history_data(date_start, date_end, selected_trips)
     result_list = []
     for i, single_trip in enumerate(selected_trips):
-        if single_trip != 'YU_A6-Weekday-SDon-070000_S57_4':
-            continue
-        # if i % 100 == 0:
-        print "index of the current trip id in the selected trips: ", i
+        if i % 100 == 0:
+            print "index of the current trip id in the selected trips: ", i
         tmp_segment_df = calculate_travel_duration(single_trip, full_history)
         if tmp_segment_df is None:
             continue
