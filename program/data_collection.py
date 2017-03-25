@@ -241,7 +241,7 @@ def filter_history_data(date_start, date_end, selected_trips_var):
         tmp_history = ptr_history[ptr_history.trip_id.isin(selected_trips_var)]
         history_list.append(tmp_history)
     result = pd.concat(history_list)
-    return result
+    return result[result.next_stop_id != '\N']
 
 
 def extractTime(time):
@@ -377,24 +377,31 @@ def calculate_travel_duration(single_trip, full_history):
         if segment_pair_df is None:
             continue
         segment_df_list.append(segment_pair_df)
-    result = pd.concat(segment_df_list)
+    if segment_df_list == []:
+        result = None
+    else:
+        result = pd.concat(segment_df_list)
     return result
 
 
 def generate_original_dataframe(selected_trips, date_start, date_end):
+    # type: (object, object, object) -> object
     """
     This function will read the list of the selected trips and read the them one by one and concatenate all their dataframe together.
     """
     full_history = filter_history_data(date_start, date_end, selected_trips)
     result_list = []
     for i, single_trip in enumerate(selected_trips):
-        if i % 10 == 0:
+        if i % 100 == 0:
             print "index of the current trip id in the selected trips: ", i
         tmp_segment_df = calculate_travel_duration(single_trip, full_history)
         if tmp_segment_df is None:
             continue
         result_list.append(tmp_segment_df)
-    result = pd.concat(result_list)
+    if result_list == []:
+        result = None
+    else:
+        result = pd.concat(result_list)
     return result
 
 
