@@ -493,9 +493,8 @@ def improve_dataset():
     print "length of the trips: ", len(trips)
     df_list = []
     for i, single_trip in enumerate(trips):
-        if single_trip != 'YU_A6-Weekday-SDon-070000_S57_4':
-            continue
-        print i, single_trip
+        if i % 50 == 0:
+            print "index = ", i, single_trip
         date_list = list(set(segment_df[segment_df.trip_id == single_trip].date))
         stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
         for date_var in date_list:
@@ -543,11 +542,8 @@ algorithm for calculate the single record:
 #################################################################################################################
 #                                    debug section                                                              #
 #################################################################################################################
-# segment_df = improve_dataset()
-# segment_df.to_csv('segment.csv')
-selected_trips = select_trip_list()
-original_segment_df = generate_original_dataframe(selected_trips, 20160104, 20160123)
-original_segment_df.to_csv('original_segement.csv')
+segment_df = improve_dataset()
+segment_df.to_csv('segment.csv')
 
 
 #################################################################################################################
