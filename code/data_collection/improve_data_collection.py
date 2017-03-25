@@ -15,14 +15,11 @@ import numpy as np
 from datetime import datetime, timedelta
 
 
-
-
 # read the data.csv file at first
 def read_data():
     segment_df = pd.read_csv('original_segment.csv')
     stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
     return segment_df, stop_times
-
 
 
 # Use the first method to improve the data
@@ -32,6 +29,8 @@ algorithm:
 2. run the function
 3. Export the file.
 """
+
+
 def improve_dataset_method1():
     """
     algorithm:
@@ -70,17 +69,13 @@ def improve_dataset_method1():
     return result
 
 
-
-
-
-
-
 def improve_dataset_method1_unit(single_trip, date, stop_sequence, segment_df):
     """
     This funciton is used to improve the dataset for a specific trip_id at a spacific date.
-
     """
-    df = pd.DataFrame(columns=['segment_start', 'segment_end', 'segment_pair', 'time_of_day', 'day_of_week', 'date', 'weather', 'trip_id', 'travel_duration'])
+    df = pd.DataFrame(
+        columns=['segment_start', 'segment_end', 'segment_pair', 'time_of_day', 'day_of_week', 'date', 'weather',
+                 'trip_id', 'travel_duration'])
     current_segmen_pair = segment_df[(segment_df.trip_id == single_trip) & (segment_df.date == date)]
     for i in xrange(1, len(current_segmen_pair)):
         segment_start = int(current_segmen_pair.iloc[i - 1].segment_start)
@@ -92,7 +87,7 @@ def improve_dataset_method1_unit(single_trip, date, stop_sequence, segment_df):
         else:
             skipped_stops = stop_sequence[start_idx + 1:end_idx]
             number_travel_duration = len(skipped_stops) + 1
-            arrival_time1 = datetime.strptime(current_segmen_pair.iloc[i-1].time_of_day, '%H:%M:%S')
+            arrival_time1 = datetime.strptime(current_segmen_pair.iloc[i - 1].time_of_day, '%H:%M:%S')
             arrival_time2 = datetime.strptime(current_segmen_pair.iloc[i].time_of_day, '%H:%M:%S')
             timespan = arrival_time2 - arrival_time1
             total_duration = timespan.total_seconds()
@@ -112,12 +107,11 @@ def improve_dataset_method1_unit(single_trip, date, stop_sequence, segment_df):
                 weather = current_segmen_pair.iloc[0].weather
                 trip_id = single_trip
                 travel_duration = average_duration
-                df.loc[len(df)] = [segment_start, segment_end, segment_pair, time_of_day, day_of_week, date, weather, trip_id, travel_duration]
+                df.loc[len(df)] = [segment_start, segment_end, segment_pair, time_of_day, day_of_week, date, weather,
+                                   trip_id, travel_duration]
     return df
 
 
-
-
-if __name__=="__main__":
+if __name__ == "__main__":
     improved_dataset = improve_dataset_method1()
     improved_dataset.to_csv('improved_segment.csv')

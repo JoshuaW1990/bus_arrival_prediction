@@ -244,7 +244,7 @@ def filter_history_data(date_start, date_end, selected_trips_var):
     return result[result.next_stop_id != '\N']
 
 
-def extractTime(time):
+def extract_time(time):
     """
     example of time(str): '2017-01-16T15:09:28Z'
     """
@@ -252,24 +252,24 @@ def extractTime(time):
     return result
 
 
-def calculateTimeSpan(time1, time2):
-    timespan = extractTime(time2) - extractTime(time1)
+def calculate_time_span(time1, time2):
+    timespan = extract_time(time2) - extract_time(time1)
     return timespan.total_seconds()
 
 
-def add_weather_info(date):
+def add_weather_info(date_var):
     """
     add the weather information from the file: weather.csv
     The weather are expressed as below:
     0: sunny
     1: rainy
     2: snowy
-    :param date: the date for querying the weather
+    :param date_var: the date for querying the weather
     :return: return the weather value today.
     """
     filename = 'weather.csv'
     weather = pd.read_csv(filename)
-    ptr_weather = weather[weather.date == date]
+    ptr_weather = weather[weather.date == date_var]
     if ptr_weather.iloc[0].snow == 1:
         weather_today = 2
     elif ptr_weather.iloc[0].rain == 1:
@@ -293,8 +293,8 @@ def calculate_travel_duration_single_date(history):
     # filter the historical data
     # When filtering the last one, we need to notice that sometimes the bus has been stopped but the GPS device is still recording the location of the bus. Thus we need to check the last stop specificaly.
     trip_id = history.iloc[0].trip_id
-    date = history.iloc[0].timestamp[:10].translate(None, '-')
-    date_time = datetime.strptime(date, '%Y%m%d')
+    date_var = history.iloc[0].timestamp[:10].translate(None, '-')
+    date_time = datetime.strptime(date_var, '%Y%m%d')
     filtered_history = pd.DataFrame(columns=history.columns)
     for i in xrange(1, len(history)):
         if history.iloc[i - 1].next_stop_id == history.iloc[i].next_stop_id:
@@ -323,17 +323,15 @@ def calculate_travel_duration_single_date(history):
         distance_location = float(filtered_history.iloc[i + 1].dist_along_route) - float(
             filtered_history.iloc[i].dist_along_route)
         distance_station = float(filtered_history.iloc[i].dist_from_stop)
-        # if distance_location == 0:
-        # 	print filtered_history.iloc[i - 2: i + 2]
         if distance_station >= distance_location or distance_location < 0:
             continue
         ratio = distance_station / distance_location
         time1 = filtered_history.iloc[i].timestamp
         time2 = filtered_history.iloc[i + 1].timestamp
-        time_span = calculateTimeSpan(time1, time2)
+        time_span = calculate_time_span(time1, time2)
         estimated_travel_time = time_span * ratio
         estimated_travel_time = timedelta(0, estimated_travel_time)
-        estimated_arrival_time = extractTime(time1) + estimated_travel_time
+        estimated_arrival_time = extract_time(time1) + estimated_travel_time
         stop_arrival_time.append((next_stop, estimated_arrival_time))
 
     # Calculate the travel_duration according to the stop_arrival_time list
@@ -351,7 +349,7 @@ def calculate_travel_duration_single_date(history):
         time_of_day = stop_arrival_time[i][1]
         result.loc[len(result)] = [int(segment_start), int(segment_end),
                                    (int(segment_start), int(segment_end)), str(time_of_day)[11:19],
-                                   date_time.weekday(), date, add_weather_info(int(date)), trip_id,
+                                   date_time.weekday(), date_var, add_weather_info(int(date_var)), trip_id,
                                    travel_duration.total_seconds()]
     # print "complete obtaining the segement data for the date: ", date
     return result
@@ -366,13 +364,15 @@ def calculate_travel_duration(single_trip, full_history):
     segment_start    segment_end    segment_pair   time_of_day    day_of_week    date    weather    trip_id    travel_duration
     """
     history = full_history[full_history.trip_id == single_trip]
+    print "trip id is ", single_trip
+    print "historical data length: ", len(history)
     if len(history) == 0:
         return None
     date_set = set(list(history.service_date))
     segment_df_list = []
     # weather information and the day of week should be filled in each loop of the date
-    for date in date_set:
-        tmp_history = history[history.service_date == date]
+    for date_var in date_set:
+        tmp_history = history[history.service_date == date_var]
         segment_pair_df = calculate_travel_duration_single_date(tmp_history)
         if segment_pair_df is None:
             continue
@@ -384,12 +384,12 @@ def calculate_travel_duration(single_trip, full_history):
     return result
 
 
-def generate_original_dataframe(selected_trips, date_start, date_end):
-    # type: (object, object, object) -> object
+def generate_original_dataframe(selected_trips, date_start, date_end, full_history=None):
     """
     This function will read the list of the selected trips and read the them one by one and concatenate all their dataframe together.
     """
-    full_history = filter_history_data(date_start, date_end, selected_trips)
+    if full_history is None:
+        full_history = filter_history_data(date_start, date_end, selected_trips)
     result_list = []
     for i, single_trip in enumerate(selected_trips):
         if i % 100 == 0:
@@ -405,23 +405,129 @@ def generate_original_dataframe(selected_trips, date_start, date_end):
     return result
 
 
+def improve_dataset_unit(single_trip, date_var, stop_sequence, segment_df):
+    """
+    This funciton is used to improve the dataset for a specific trip_id at a spacific date.
+    """
+    df = pd.DataFrame(
+        columns=['segment_start', 'segment_end', 'segment_pair', 'time_of_day', 'day_of_week', 'date', 'weather',
+                 'trip_id', 'travel_duration'])
+    current_segmen_pair = segment_df[(segment_df.trip_id == single_trip) & (segment_df.date == date_var)]
+    for i in xrange(1, len(current_segmen_pair)):
+        segment_start = int(current_segmen_pair.iloc[i - 1].segment_start)
+        segment_end = int(current_segmen_pair.iloc[i].segment_start)
+        start_idx = stop_sequence.index(segment_start)
+        end_idx = stop_sequence.index(segment_end)
+        if end_idx - start_idx == 1:
+            df.loc[len(df)] = current_segmen_pair.iloc[i - 1]
+        else:
+            skipped_stops = stop_sequence[start_idx + 1:end_idx]
+            number_travel_duration = len(skipped_stops) + 1
+            arrival_time1 = datetime.strptime(current_segmen_pair.iloc[i - 1].time_of_day, '%H:%M:%S')
+            arrival_time2 = datetime.strptime(current_segmen_pair.iloc[i].time_of_day, '%H:%M:%S')
+            timespan = arrival_time2 - arrival_time1
+            total_duration = timespan.total_seconds()
+            average_duration = total_duration / float(number_travel_duration)
+            estimated_travel_time = timedelta(0, average_duration)
+            tmp_total_stops = [segment_start] + skipped_stops + [segment_end]
+            for j in xrange(len(tmp_total_stops) - 1):
+                segment_start = tmp_total_stops[j]
+                segment_end = tmp_total_stops[j + 1]
+                segment_pair = (segment_start, segment_end)
+                previous_arrival_time = current_segmen_pair.iloc[i - 1].time_of_day
+                estimated_arrival_time = datetime.strptime(previous_arrival_time, '%H:%M:%S')
+                for count in range(j):
+                    estimated_arrival_time += estimated_travel_time
+                time_of_day = str(estimated_arrival_time)[11:19]
+                day_of_week = current_segmen_pair.iloc[0].day_of_week
+                weather = current_segmen_pair.iloc[0].weather
+                trip_id = single_trip
+                travel_duration = average_duration
+                df.loc[len(df)] = [segment_start, segment_end, segment_pair, time_of_day, day_of_week, date_var,
+                                   weather,
+                                   trip_id, travel_duration]
+    return df
+
+
+def improve_dataset():
+    """
+    algorithm:
+    for each specific trip_id:
+        obtain the date_list
+        obtain the stop_sequence
+        for each date in date_list:
+            build the dataframe
+            obtain the current_segment_pair for the specific trip_id and date
+            obtain the segment_start sequence
+            for each segment_start in the segment_start sequence:
+                find the corresponding index in the stop_sequence
+                find the index of the segment_end in the corresponding segment_pair
+                if the indices of these two are i and i + 1:
+                    add the segment_pair into the new dataframe as the result
+                else:
+                    use the index to find all the skipped stops from the stop_sequence
+                    calculate the number of skipped travel duration within this segment
+                    use the average value as the travel duration and add the stop arrival time for each skipped stops
+                    add the segment_pair into the new dataframe as the result
+
+    """
+    segment_df = pd.read_csv('original_segment.csv')
+    stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
+
+    trips = set(segment_df.trip_id)
+    print "length of the trips: ", len(trips)
+    df_list = []
+    for i, single_trip in enumerate(trips):
+        print i, single_trip
+        date_list = list(set(segment_df[segment_df.trip_id == single_trip].date))
+        stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
+        for date_var in date_list:
+            df = improve_dataset_unit(single_trip, date_var, stop_sequence, segment_df)
+            df_list.append(df)
+    result = pd.concat(df_list)
+    return result
+
+
 #################################################################################################################
 #                                    API data                                                                   #
 #################################################################################################################
 """
 Rearrange the order in the loop to save the time, utilize the group by
+Algorithm:
+Prepare the time list
+Read the full historical data for testing
+Determine the test routes (2 ~ 4), and the corresponding stop sequence
+Generate the random stop id from the test routes
+Generate the set of trip id for the testing routes
+Filtering the historical data with trip id, NAN
+generate date list
+for date in date list:
+    generate single historical data for the date
+    for stop in stop set:
+        Filtering the trip set according to the stop
+        Filtering the single historical data according to the trip set
+        for single_trip in trip set:
+            obtain the single historical data for that trip
+            for each time point in the time list:
+                check whether the bus has passed the stop at the time point
+                if yes, continue to next trip
+                otherwise, save the record into result
 """
+
+
+
+"""
+algorithm for calculate the single record:
+
+"""
+
 
 
 #################################################################################################################
 #                                    debug section                                                              #
 #################################################################################################################
-selected_trips = select_trip_list()
-print "length of the selected trips: ", len(selected_trips)
-# full_history = filter_history_data(20160104, 20160123, selected_trips)
-# full_history = pd.read_csv('full_history.csv')
-segment_df = generate_original_dataframe(selected_trips, 20160104, 20160123)
-segment_df.to_csv('original_segment.csv')
+segment_df = improve_dataset()
+segment_df.to_csv('segment.csv')
 
 
 #################################################################################################################
