@@ -290,7 +290,22 @@ def calculate_travel_duration_single_date(history):
     # Some of the stops might not be recored in the historical data, and it is necessary to be considered to avoid the mismatch of the schedule data and the historical data.
     # One of the method is to build a simple filter for the historical data at first. This filter will remove the unecessary records like repeated next_stop_id record. Then compared the result with the scheduled data.
 
+    # in the historical data, sometimes there is a bug which the trip id was assigned to the wrong vehicle
+    # we need to skipp this case by checking the vehicle id
+    vehicle_id = history.iloc[0].vehicle_id
+    count = 1
+    for i in xrange(1, len(history)):
+        if history.iloc[i].vehicle_id == vehicle_id:
+            count += 1
+        else:
+            if count == 0:
+                vehicle_id = history.iloc[i].vehicle_id
+                count = 1
+            else:
+                count -= 1
+
     # filter the historical data
+    history = history[history.vehicle_id == vehicle_id]
     # When filtering the last one, we need to notice that sometimes the bus has been stopped but the GPS device is still recording the location of the bus. Thus we need to check the last stop specificaly.
     trip_id = history.iloc[0].trip_id
     date_var = history.iloc[0].timestamp[:10].translate(None, '-')
@@ -392,8 +407,10 @@ def generate_original_dataframe(selected_trips, date_start, date_end, full_histo
         full_history = filter_history_data(date_start, date_end, selected_trips)
     result_list = []
     for i, single_trip in enumerate(selected_trips):
-        if i % 100 == 0:
-            print "index of the current trip id in the selected trips: ", i
+        if single_trip != 'YU_A6-Weekday-SDon-070000_S57_4':
+            continue
+        # if i % 100 == 0:
+        print "index of the current trip id in the selected trips: ", i
         tmp_segment_df = calculate_travel_duration(single_trip, full_history)
         if tmp_segment_df is None:
             continue
@@ -478,6 +495,8 @@ def improve_dataset():
     print "length of the trips: ", len(trips)
     df_list = []
     for i, single_trip in enumerate(trips):
+        if single_trip != 'YU_A6-Weekday-SDon-070000_S57_4':
+            continue
         print i, single_trip
         date_list = list(set(segment_df[segment_df.trip_id == single_trip].date))
         stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
@@ -526,8 +545,11 @@ algorithm for calculate the single record:
 #################################################################################################################
 #                                    debug section                                                              #
 #################################################################################################################
-segment_df = improve_dataset()
-segment_df.to_csv('segment.csv')
+# segment_df = improve_dataset()
+# segment_df.to_csv('segment.csv')
+selected_trips = select_trip_list()
+original_segment_df = generate_original_dataframe(selected_trips, 20160104, 20160123)
+original_segment_df.to_csv('original_segement.csv')
 
 
 #################################################################################################################
