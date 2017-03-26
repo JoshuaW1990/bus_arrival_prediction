@@ -254,6 +254,12 @@ def extract_time(time):
 
 
 def calculate_time_span(time1, time2):
+    """
+    Calculate the duration of two timepoints
+    :param time1: previous time point, ex: '2017-01-16T15:09:28Z'
+    :param time2: next time point, ex: '2017-01-16T15:09:28Z'
+    :return: float number of seconds
+    """
     timespan = extract_time(time2) - extract_time(time1)
     return timespan.total_seconds()
 
@@ -516,7 +522,7 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
     :param stop_num: the number of the stop id for test
     :param route_stop_dist: the dataframe for the route_stop_dist.csv file
     :return: the dataframe for the api data
-    trip_id    vehicle_id    route_id    stop_id    time_of_day    date    dist_along_route    stop_num_from_call
+    trip_id    vehicle_id    route_id    stop_id    time_of_day    date    dist_along_route
     
     Algorithm:
     Read the full historical data for testing
@@ -555,18 +561,30 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
         full_history = pd.read_csv('full_history.csv')
     history = full_history[full_history.trip_id.isin(trip_route_dict.keys())]
     history_grouped = history.groupby(['service_date', 'trip_id'])
-    result = pd.DataFrame(columns=['trip_id', 'vehicle_id', 'route_id', 'stop_id', 'time_of_day', 'date', 'dist_along_route', 'stop_num_from_call'])
+    result = pd.DataFrame(columns=['trip_id', 'vehicle_id', 'route_id', 'stop_id', 'time_of_day', 'date', 'dist_along_route'])
+    print_dict = dict.fromkeys(date_list, True)
     for name, single_history in list(history_grouped):
         date, single_trip = name
         if date not in date_list:
             continue
+        if print_dict[date]:
+            print date
+            print_dict[date] = False
         route_id = trip_route_dict[single_trip]
         stop_set = [str(int(item)) for item in route_stop_dict[route_id]]
         stop_sequence = [str(int(item)) for item in list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)]
-        single_history = single_history[single_history.next_stop_id.isin(stop_sequence)]
-        if len(single_history) < 3:
+        tmp_history = single_history[(single_history.next_stop_id.isin(stop_sequence)) & (single_history.dist_along_route > '0')]
+        if len(tmp_history) < 3:
             continue
-        print single_trip
+        else:
+            single_history = pd.DataFrame(columns=tmp_history.columns)
+            for i in range(1, len(tmp_history)):
+                if float(tmp_history.iloc[i - 1].dist_along_route) < float(tmp_history.iloc[i].dist_along_route):
+                    single_history.loc[len(single_history)] = tmp_history.iloc[i - 1]
+            if len(single_history) < 3:
+                continue
+            if tmp_history.iloc[-1].dist_along_route >= single_history.iloc[-1].dist_along_route:
+                single_history.loc[len(single_history)] = tmp_history.iloc[-1]
         for target_stop in stop_set:
             target_index = stop_sequence.index(target_stop)
             for current_time in time_list:
@@ -576,6 +594,7 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
                     index += 1
                 if index == len(single_history):
                     break
+                index -= 1
                 tmp_stop = str(single_history.iloc[index].next_stop_id)
                 tmp_index = stop_sequence.index(tmp_stop)
                 if tmp_index > target_index:
@@ -583,8 +602,10 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
                 # If the bus has not started from the initial stop yet, continue to next time point in the time list
                 if single_history.iloc[0].timestamp[11:19] > current_time:
                     continue
-                # If the bus does not pass the target stop
-                result.loc[len(result)] = generate_single_api(current_time, single_history, target_stop)
+                # If the bus does not pass the target stop, save the remained stops into the stop sequence and calculate the result
+                current_list = generate_single_api(current_time, route_stop_dist, route_id, single_history[index:], target_stop, target_index)
+                if current_list is not None:
+                    result.loc[len(result)] = current_list
     return result
 
 
@@ -601,27 +622,42 @@ Calculate the dist_along_route for the bus at the time point:
 According to the dista_along_route and the stop sequence confirm the remained stops including the target stop
 Count the number of the remained stops
 """
-def generate_single_api(current_time, single_history, stop_id):
+def generate_single_api(current_time, route_stop_dist, route_id, single_history, stop_id, end_index):
     """
     Calculate the single record for the api data
     :param current_time: The current time for generating the api data
     :param single_history: The historical data for the specific date and the trip id
     :param stop_id: The target stop id
     :return: the list for the result
-    [trip_id    vehicle_id    route_id    time_of_day    date    dist_along_route    stop_num_from_call]
+    [trip_id    vehicle_id    route_id    time_of_day    date    dist_along_route]
     
     Algorithm for calculate the single record:
     According to the time point, find the closest time duration (prev, next)
-    Calculate the dist_along_route for the bus at the time point:
+    Calculate the dist_along_route for the bus at current timepoint:
         calculate the space distance between the time duration (prev, next)
         calculate the time distance of two parts: (prev, current), (prev, next)
         use the ratio of the time distance to multiply with the space distance to obtain the dist_along_route for current
     According to the dista_along_route and the stop sequence confirm the remained stops including the target stop
     Count the number of the remained stops
     """
-    # TODO complete the single api function
-    pass
-    # for i in xrange(1, len(single_history)):
+    single_trip = single_history.iloc[0].trip_id
+    prev = single_history.iloc[0]
+    next = single_history.iloc[1]
+    # If the time duration between the prev and the next time point is larger than 5 minutes, ignore it for precision
+    if calculate_time_span(prev['timestamp'], next['timestamp']) > 300:
+        return None
+    # calculate the dist_along_route for current
+    distance_prev_next = (float(next['dist_along_route']) - float(next['dist_from_stop'])) - (float(prev['dist_along_route']) - float(prev['dist_from_stop']))
+    time_duration_prev_next = calculate_time_span(prev['timestamp'], next['timestamp'])
+    time_duration_prev_current = datetime.strptime(current_time, '%H:%M:%S') - extract_time(prev['timestamp'])
+    time_duration_prev_current = time_duration_prev_current.total_seconds()
+    ratio = float(time_duration_prev_current) / float(time_duration_prev_next)
+    distance_prev_current = float(distance_prev_next) * ratio
+    dist_along_route = (float(prev['dist_along_route']) - float(prev['dist_from_stop'])) + distance_prev_current
+    # Generate the return list
+    # trip_id    vehicle_id    route_id    stop_id    time_of_day    date    dist_along_route
+    result = [single_trip, prev['vehicle_id'], route_id, stop_id, current_time, prev['service_date'], dist_along_route]
+    return result
 
 
 #################################################################################################################
@@ -630,9 +666,13 @@ def generate_single_api(current_time, single_history, stop_id):
 # date_list = range(20160125, 20160130)
 # route_stop_dist = pd.read_csv('route_stop_dist.csv')
 # stop_num = 2
-# route_list = ['X14', 'X11']
-# full_history = pd.read_csv(path + 'data/history/bus_time_20160125.csv')
-# time_list = ['12:00:00', '12:05:00']
+# route_list = ['X14', 'X11', 'X42', 'S66']
+# history_list = []
+# for current_date in date_list:
+#     filename = 'bus_time_' + str(current_date) + '.csv'
+#     history_list.append(pd.read_csv(path + 'data/history/' + filename))
+# full_history = pd.concat(history_list)
+# time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
 # api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
 
 
@@ -668,4 +708,25 @@ if __name__ == '__main__':
         segment_df.to_csv('segment.csv')
         print "complete exporting the segment.csv file"
     # export the api data
+    if 'api_data.csv' not in file_list:
+        print "export api_data.csv file"
+        date_list = range(20160125, 20160130)
+        route_stop_dist = pd.read_csv('route_stop_dist.csv')
+        stop_num = 2
+        route_list = ['X14', 'X11', 'X42', 'S66']
+        history_list = []
+        for current_date in date_list:
+            filename = 'bus_time_' + str(current_date) + '.csv'
+            history_list.append(pd.read_csv(path + 'data/history/' + filename))
+        full_history = pd.concat(history_list)
+        api_data_list = []
+        time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
+        current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+        api_data_list.append(current_api_data)
+        time_list = ['18:00:00', '18:05:00', '18:10:00', '18:15:00', '18:20:00', '18:25:00', '18:30:00']
+        current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+        api_data_list.append(current_api_data)
+        api_data = pd.concat(api_data_list)
+        api_data.to_csv('api_data.csv')
+        print "complete exporting the api_data.csv file"
     print "complete data collection"
