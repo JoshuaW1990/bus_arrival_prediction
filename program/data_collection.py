@@ -279,7 +279,7 @@ def add_weather_info(date_var):
     return weather_today
 
 
-def calculate_travel_duration_single_date(history):
+def calculate_travel_duration_single_date(history, stop_sequence):
     """
     Calculate the travel duration of every segments for a specific trip at a specific date
     The format of the return value(dataframe):
@@ -290,22 +290,7 @@ def calculate_travel_duration_single_date(history):
     # Some of the stops might not be recored in the historical data, and it is necessary to be considered to avoid the mismatch of the schedule data and the historical data.
     # One of the method is to build a simple filter for the historical data at first. This filter will remove the unecessary records like repeated next_stop_id record. Then compared the result with the scheduled data.
 
-    # in the historical data, sometimes there is a bug which the trip id was assigned to the wrong vehicle
-    # we need to skipp this case by checking the vehicle id
-    vehicle_id = history.iloc[0].vehicle_id
-    count = 1
-    for i in xrange(1, len(history)):
-        if history.iloc[i].vehicle_id == vehicle_id:
-            count += 1
-        else:
-            if count == 0:
-                vehicle_id = history.iloc[i].vehicle_id
-                count = 1
-            else:
-                count -= 1
-
     # filter the historical data
-    history = history[history.vehicle_id == vehicle_id]
     # When filtering the last one, we need to notice that sometimes the bus has been stopped but the GPS device is still recording the location of the bus. Thus we need to check the last stop specificaly.
     trip_id = history.iloc[0].trip_id
     date_var = history.iloc[0].timestamp[:10].translate(None, '-')
@@ -315,12 +300,20 @@ def calculate_travel_duration_single_date(history):
         if history.iloc[i - 1].next_stop_id == history.iloc[i].next_stop_id:
             continue
         else:
-            filtered_history.loc[len(filtered_history)] = list(history.iloc[i])
+            if  history.iloc[i - 1].next_stop_id not in stop_sequence or history.iloc[i - 1].dist_along_route == 0:
+                continue
+            if len(filtered_history) != 0 and filtered_history.iloc[-1].dist_from_stop == history.iloc[i - 1].dist_from_stop:
+                continue
+            filtered_history.loc[len(filtered_history)] = list(history.iloc[i - 1])
     if len(filtered_history) == 0:
         return None
-    last_stop_id = filtered_history.iloc[-1].next_stop_id
-    tmp_history = history[history.next_stop_id == last_stop_id]
-    filtered_history.iloc[-1] = tmp_history.iloc[0]
+    for i in xrange(len(history) - 1, -1):
+        if history.iloc[i].dist_from_stop == 0 or history.iloc[i].next_stop_id not in stop_sequence or history.iloc[i].dist_along_route == 0:
+            continue
+        else:
+            if history.iloc[i].next_stop_id != filtered_history.iloc[-1].next_stop_id:
+                filtered_history.loc[len(filtered_history)] = list(history.iloc[i])
+            break
 
     # analyze the result with the filtered historical data
     # Problems:
@@ -370,7 +363,7 @@ def calculate_travel_duration_single_date(history):
     return result
 
 
-def calculate_travel_duration(single_trip, full_history):
+def calculate_travel_duration(single_trip, full_history, stop_sequence):
     """
     Calculate the travel duration between a specific segment pair for a specific trip
     :param single_trip: trip id for a specific trip
@@ -388,7 +381,7 @@ def calculate_travel_duration(single_trip, full_history):
     # weather information and the day of week should be filled in each loop of the date
     for date_var in date_set:
         tmp_history = history[history.service_date == date_var]
-        segment_pair_df = calculate_travel_duration_single_date(tmp_history)
+        segment_pair_df = calculate_travel_duration_single_date(tmp_history, stop_sequence)
         if segment_pair_df is None:
             continue
         segment_df_list.append(segment_pair_df)
@@ -406,10 +399,17 @@ def generate_original_dataframe(selected_trips, date_start, date_end, full_histo
     if full_history is None:
         full_history = filter_history_data(date_start, date_end, selected_trips)
     result_list = []
+    route_stop_dist = pd.read_csv('route_stop_dist.csv')
+    trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
     for i, single_trip in enumerate(selected_trips):
-        if i % 100 == 0:
-            print "index of the current trip id in the selected trips: ", i
-        tmp_segment_df = calculate_travel_duration(single_trip, full_history)
+        # if i % 100 == 0:
+        #     print "index of the current trip id in the selected trips: ", i
+        if single_trip != 'CA_H6-Weekday-031000_MISC_407':
+            continue
+        print "index of the current trip id in the selected trips: ", i
+        route_id = trips[trips.trip_id == single_trip].iloc[0].route_id
+        stop_sequence = [str(int(item)) for item in list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)]
+        tmp_segment_df = calculate_travel_duration(single_trip, full_history, stop_sequence)
         if tmp_segment_df is None:
             continue
         result_list.append(tmp_segment_df)
@@ -493,8 +493,11 @@ def improve_dataset():
     print "length of the trips: ", len(trips)
     df_list = []
     for i, single_trip in enumerate(trips):
-        if i % 50 == 0:
-            print "index = ", i, single_trip
+        # if i % 50 == 0:
+        #     print "index = ", i, single_trip
+        if single_trip != 'CA_H6-Weekday-031000_MISC_407':
+            continue
+        print i, single_trip
         date_list = list(set(segment_df[segment_df.trip_id == single_trip].date))
         stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
         for date_var in date_list:
@@ -542,9 +545,11 @@ algorithm for calculate the single record:
 #################################################################################################################
 #                                    debug section                                                              #
 #################################################################################################################
-segment_df = improve_dataset()
-segment_df.to_csv('segment.csv')
-
+# segment_df = improve_dataset()
+# segment_df.to_csv('segment.csv')
+selected_trips = select_trip_list()
+segment_df = generate_original_dataframe(selected_trips, 20160104, 20160123)
+segment_df.to_csv('original_segment.csv')
 
 #################################################################################################################
 #                                    main function                                                              #
