@@ -402,11 +402,8 @@ def generate_original_dataframe(selected_trips, date_start, date_end, full_histo
     route_stop_dist = pd.read_csv('route_stop_dist.csv')
     trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
     for i, single_trip in enumerate(selected_trips):
-        # if i % 100 == 0:
-        #     print "index of the current trip id in the selected trips: ", i
-        if single_trip != 'CA_H6-Weekday-031000_MISC_407':
-            continue
-        print "index of the current trip id in the selected trips: ", i
+        if i % 100 == 0:
+            print "index of the current trip id in the selected trips: ", i
         route_id = trips[trips.trip_id == single_trip].iloc[0].route_id
         stop_sequence = [str(int(item)) for item in list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)]
         tmp_segment_df = calculate_travel_duration(single_trip, full_history, stop_sequence)
@@ -493,11 +490,8 @@ def improve_dataset():
     print "length of the trips: ", len(trips)
     df_list = []
     for i, single_trip in enumerate(trips):
-        # if i % 50 == 0:
-        #     print "index = ", i, single_trip
-        if single_trip != 'CA_H6-Weekday-031000_MISC_407':
-            continue
-        print i, single_trip
+        if i % 50 == 0:
+            print "index = ", i, single_trip
         date_list = list(set(segment_df[segment_df.trip_id == single_trip].date))
         stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
         for date_var in date_list:
