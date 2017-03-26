@@ -712,8 +712,8 @@ if __name__ == '__main__':
         print "export api_data.csv file"
         date_list = range(20160125, 20160130)
         route_stop_dist = pd.read_csv('route_stop_dist.csv')
-        stop_num = 2
-        route_list = ['X14', 'X11', 'X42', 'S66']
+        stop_num = 4
+        route_list = list(set(route_stop_dist.route_id))
         history_list = []
         for current_date in date_list:
             filename = 'bus_time_' + str(current_date) + '.csv'
