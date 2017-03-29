@@ -113,7 +113,7 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     result_list = []
     for index in range(len(grouped)):
         name, single_history = grouped[index]
-        if index % 150 == 0:
+        if index % 1000 == 0:
             print index
         service_date, trip_id = name
         if service_date <= 20160103:
