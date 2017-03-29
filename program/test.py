@@ -65,7 +65,7 @@ def filter_history_data(date_start, date_end, selected_trips_var):
         ptr_history = pd.read_csv(path + 'data/history/' + filename)
         tmp_history = ptr_history[
             (ptr_history.trip_id.isin(selected_trips_var)) & (ptr_history.dist_along_route != '\N') & (
-                ptr_history.dist_along_route != 0)]
+                ptr_history.dist_along_route != 0) & (ptr_history.progress == 0)]
         history_list.append(tmp_history)
     result = pd.concat(history_list)
     return result
@@ -107,12 +107,15 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     :param stop_times_var: the dataframe from stop_times.txt
     :return: dataframe for the original segment
     """
+    test_trip = 'CA_A6-Weekday-SDon-039000_MISC_434'
+    full_history_var = full_history_var[full_history_var.service_date == 20160104]
+    full_history_var = full_history_var[full_history_var.trip_id == test_trip]
     grouped = list(full_history_var.groupby(['service_date', 'trip_id']))
     print len(grouped)
     result_list = []
     for index in range(len(grouped)):
         name, single_history = grouped[index]
-        if index % 1500 == 0:
+        if index % 150 == 0:
             print index
         service_date, trip_id = name
         if service_date <= 20160103:
@@ -160,7 +163,7 @@ for i = 1, len(history) - 1:
         prev_time = datetime.strptime(prev.timestamp, '%Y-%m-%dT%H:%M:%SZ')
         next_time = ...
         travel_duration = next_time - prev_time
-    
+
 """
 
 
@@ -196,7 +199,7 @@ def generate_original_segment_single_history(history, stop_sequence):
         service_date = history[0].service_date
         ...
         save the record to result
-    
+
     :param history: single historical data
     :param stop_sequence: stop sequence for the corresponding trip id
     :return: the dataframe of the origianl segment dataset
@@ -209,10 +212,12 @@ def generate_original_segment_single_history(history, stop_sequence):
     while i < len(history):
         prev_record = history.iloc[i - 1]
         next_record = history.iloc[i]
-        while i < len(history) and prev_record.next_stop_id == next_record.next_stop_id:
+        while i < len(history) and stop_sequence.index(prev_record.next_stop_id) >= stop_sequence.index(next_record.next_stop_id):
             i += 1
             if i == len(history):
                 break
+            if stop_sequence.index(prev_record.next_stop_id) == stop_sequence.index(next_record.next_stop_id):
+                prev_record = next_record
             next_record = history.iloc[i]
         if i == len(history):
             break
