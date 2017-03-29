@@ -307,7 +307,7 @@ def calculate_travel_duration_single_date(history, stop_sequence):
         if history.iloc[i - 1].next_stop_id == history.iloc[i].next_stop_id:
             continue
         else:
-            if  history.iloc[i - 1].next_stop_id not in stop_sequence or history.iloc[i - 1].dist_along_route == 0:
+            if history.iloc[i - 1].next_stop_id not in stop_sequence or history.iloc[i - 1].dist_along_route == 0:
                 continue
             if len(filtered_history) != 0 and filtered_history.iloc[-1].dist_from_stop == history.iloc[i - 1].dist_from_stop:
                 continue
