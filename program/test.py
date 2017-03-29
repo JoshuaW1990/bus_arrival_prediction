@@ -107,7 +107,6 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     :param stop_times_var: the dataframe from stop_times.txt
     :return: dataframe for the original segment
     """
-    full_history_var = full_history_var[full_history_var.service_date == 20160104]
     grouped = list(full_history_var.groupby(['service_date', 'trip_id']))
     print len(grouped)
     result_list = []
