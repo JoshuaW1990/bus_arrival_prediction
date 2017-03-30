@@ -16,100 +16,81 @@ path = '../'
 #                                        segment.csv                                                            #
 #################################################################################################################
 """
-Improve the original segment such that the skipped stops will be added in the middle.
+Fix the bugs in the finals segment.csv file:
+1. some of the rows are repeated, we need to remove the duplicated one
+2. Som travel duration is too large, we need to remove the travel duration which is larger than 10 minutes
+
+Algorithm:
+split the segment with groupby(service_date, trip_id)
+result_list = []
+for name, item in splitted segment:
+    do improve for the item
+    append the result into result_list
+concatenate the result_list
 """
 
-
-
-def improve_dataset_unit(segment_df, stop_sequence):
+def fix_bug_segment(segment_df):
     """
-    This funciton is used to improve the dataset for a specific trip_id at a spacific date.
+    Fix the bugs for the segment after improvement:
+    1. some of the rows are repeated, we need to remove the duplicated one
+    2. Som travel duration is too large, we need to remove the travel duration which is larger than 10 minutes
+    
     Algorithm:
-    define result_df
-    For each row in segment_df:
-        obtain segment_start, segment_end, timestamp, travel_duration from the current row
-        start_index: index of segment_start in stop_sequence
-        end_index: ...
-        count = end_index - start_index
-        if count is 1, save the current row and continue to next row
-        average_travel_duration = travel_duration / count
-        For index in range(start_index, end_index):
-            current_segment_start = stop_sequence[index]
-            current_segment_end = stop_sequence[index + 1]
-            save the new row with the timestamp, average_travel_duration, current_segment_start, and current_segment_end into result_df
-            timestamp = timestamp + average_travel_duration
-    return result_df
-    
-    
-    return format:
-    segment_start, segment_end, timestamp, travel_duration
-    """
-    result = pd.DataFrame(columns=['segment_start', 'segment_end', 'timestamp', 'travel_duration'])
-    for i in xrange(len(segment_df)):
-        segment_start = segment_df.iloc[i]['segment_start']
-        segment_end = segment_df.iloc[i]['segment_end']
-        timestamp = segment_df.iloc[i]['timestamp']
-        travel_duration = segment_df.iloc[i]['travel_duration']
-        start_index = stop_sequence.index(segment_start)
-        end_index = stop_sequence.index(segment_end)
-        count = end_index - start_index
-        if count < 0:
-            print "error"
-            continue
-        if count == 1:
-            result.loc[len(result)] = [segment_start, segment_end, timestamp, travel_duration]
-        average_travel_duration = float(travel_duration) / float(count)
-        for j in range(start_index, end_index):
-            current_segment_start = stop_sequence[j]
-            current_segment_end = stop_sequence[j + 1]
-            result.loc[len(result)] = [current_segment_start, current_segment_end, timestamp, average_travel_duration]
-            timestamp = datetime.strptime(timestamp[:19], '%Y-%m-%d %H:%M:%S') + timedelta(0, average_travel_duration)
-            timestamp = str(timestamp)
-    return result
-
-
-
-def improve_dataset():
-    """
-    algorithm:
-    split the segment dataframe by groupby(service_date, trip_id)
-    result_list = [
-    for name, item in grouped_segment:
-        obtained the improved segment data for the item
-        add the columns:  weather, service date, day_of_week, trip_id, vehicle_id
-        save the result into result_list
-    concatenate the dataframe in the result_list
-    
-    segment_start, segment_end, timestamp, travel_duration, weather, service date, day_of_week, trip_id, vehicle_id
-    """
-    segment_df = pd.read_csv('original_segment.csv')
-    stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
-    grouped_list = list(segment_df.groupby(['service_date', 'trip_id']))
-    print "length of the total grouped list: ", len(grouped_list)
-
+    split the segment with groupby(service_date, trip_id)
     result_list = []
-    for i in xrange(len(grouped_list)):
+    for name, item in splitted segment:
+        do improve for the item
+        append the result into result_list
+    concatenate the result_list
+    :param segment_df: dataframe for segment.csv
+    :return: the dataframe after fixing the bugs in the segment.csv
+    """
+    grouped_list = list(segment_df.groupby(['service_date', 'trip_id']))
+    result_list = []
+    print 'length of the grouped list: ', len(grouped_list)
+    for i in xrange(len(grouped_list[:10])):
         if i % 1000 == 0:
             print i
         name, item = grouped_list[i]
-        service_date, trip_id = name
-        stop_sequence = list(stop_times[stop_times.trip_id == trip_id].stop_id)
-        current_segment = improve_dataset_unit(item, stop_sequence)
-        if current_segment is None:
-            continue
-        # add the other columns
-        current_segment['weather'] = item.iloc[0].weather
-        current_segment['service_date'] = service_date
-        current_segment['day_of_week'] = datetime.strptime(str(service_date), '%Y%m%d').weekday()
-        current_segment['trip_id'] = trip_id
-        current_segment['vehicle_id'] = item.iloc[0].vehicle_id
+        current_segment = fix_bug_single_segment(item)
         result_list.append(current_segment)
-    if result_list == []:
-        result = None
-    else:
-        result = pd.concat(result_list)
+    result = pd.concat(result_list)
     return result
 
 
-segment_df = improve_dataset()
-segment_df.to_csv('segment.csv')
+
+def fix_bug_single_segment(segment_df):
+    """
+    Fix the bug for a segment dataframe with specific service date and the trip id
+    
+    Algorithm:
+    Define the dataframe for the result
+    For i in range(1, len(segment_df):
+        prev_record = segment_df.iloc[i - 1]
+        next_record = segment_df.iloc[i]
+        if prev_record.segment_start = next_record.segment_start and prev_record.segment_end == next_record.segment_end:
+            This is a duplicated record, continue to next row
+        if the prev_record.travel_duration > 600 (10 minutes), continue to next row
+        save prev_record into result
+    
+    :param segment_df: dataframe of the single segment data
+    :return: dataframe for the segment after fixing the bug
+    """
+    result = pd.DataFrame(columns=segment_df.columns)
+    for i in xrange(1, len(segment_df)):
+        prev_record = segment_df.iloc[i - 1]
+        next_record = segment_df.iloc[i]
+        # check whether the row is duplicated
+        if prev_record.segment_start == next_record.segment_start and prev_record.segment_end == next_record.segment_end:
+            continue
+        # check the travel duration
+        if prev_record.travel_duration > 600:
+            continue
+        result.loc[len(result)] = prev_record
+    if result.iloc[-1].segment_start != segment_df.iloc[-1].segment_start and result.iloc[-1].segment_end != segment_df.iloc[-1].segment_end:
+        result.loc[len(result)] = segment_df.iloc[-1]
+    return result
+
+
+segment = pd.read_csv('segment.csv')
+final_segment = fix_bug_segment(segment)
