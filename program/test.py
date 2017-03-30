@@ -54,6 +54,7 @@ def filter_history_data(date_start, date_end, selected_trips_var):
     """
     # List the historical file
     file_list_var = os.listdir(path + 'data/history/')
+    file_list_var.sort()
     history_list = []
     print "filtering historical data"
     for filename in file_list_var:
@@ -107,12 +108,15 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     :param stop_times_var: the dataframe from stop_times.txt
     :return: dataframe for the original segment
     """
+    # test_trip = 'YU_A6-Saturday-108200_S59_11'
+    # full_history_var = full_history_var[full_history_var.service_date == 20160104]
+    # full_history_var = full_history_var[full_history_var.trip_id == test_trip]
     grouped = list(full_history_var.groupby(['service_date', 'trip_id']))
     print len(grouped)
     result_list = []
     for index in range(len(grouped)):
         name, single_history = grouped[index]
-        if index % 1000 == 0:
+        if index % 150 == 0:
             print index
         service_date, trip_id = name
         if service_date <= 20160103:
@@ -126,7 +130,7 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
                 majority_length = len(item)
                 majority_history = item
                 majority_vehicle = vehicle_id
-        stop_sequence = [str(item) for item in list(stop_times_var[stop_times_var.trip_id == trip_id].stop_id)]
+        stop_sequence = [item for item in list(stop_times_var[stop_times_var.trip_id == trip_id].stop_id)]
         current_segment_df = generate_original_segment_single_history(majority_history, stop_sequence)
         if current_segment_df is None:
             continue
@@ -251,9 +255,10 @@ def generate_original_segment_single_history(history, stop_sequence):
 file_list = os.listdir('./')
 # export the segment data
 print "export original_segment.csv file"
-selected_trips = select_trip_list()
+# selected_trips = select_trip_list()
 weather_df = pd.read_csv('weather.csv')
-full_history = filter_history_data(20160104, 20160123, selected_trips)
+# full_history = filter_history_data(20160104, 20160123, selected_trips)
+full_history = pd.read_csv('full_history.csv')
 stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
 segment_df = generate_original_segment(full_history, weather_df, stop_times)
 segment_df.to_csv('original_segment.csv')
