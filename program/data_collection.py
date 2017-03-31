@@ -840,61 +840,61 @@ print "complete exporting the final_segment.csv file"
 #################################################################################################################
 
 
-if __name__ == '__main__':
-    file_list = os.listdir('./')
-    # download weather information
-    if 'weather.csv' not in file_list:
-        print "download weather.csv file"
-        download_weather('20160101', '20160131')
-        print "complete downloading weather information"
-    # export the route dist data
-    if 'route_stop_dist.csv' not in file_list:
-        print "export route_stop_dist.csv file"
-        trips, stop_times, history = read_data()
-        route_stop_dist = calculate_stop_distance(trips, stop_times, history)
-        route_stop_dist.to_csv('route_stop_dist.csv')
-        print "complete exporting the route_stop_dist.csv file"
-    # export the segment data
-    if 'original_segment.csv' not in file_list:
-        print "export original_segment.csv file"
-        selected_trips = select_trip_list()
-        weather_df = pd.read_csv('weather.csv')
-        full_history = filter_history_data(20160104, 20160123, selected_trips)
-        stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
-        segment_df = generate_original_segment(full_history, weather_df, stop_times)
-        segment_df.to_csv('original_segment.csv')
-        print "complete exporting the original_segement.csv file"
-    if 'segment.csv' not in file_list:
-        print "export segment.csv file"
-        segment_df = improve_dataset()
-        segment_df.to_csv('segment.csv')
-        print "complete exporting the segment.csv file"
-    if "final_segment.csv" not in file_list:
-        print "export final segment.csv file"
-        segment_df = pd.read_csv('segment.csv')
-        final_segment = fix_bug_segment(segment_df)
-        final_segment.to_csv('final_segment.csv')
-        print "complete exporting the final_segment.csv file"
-    # export the api data
-    if 'api_data.csv' not in file_list:
-        print "export api_data.csv file"
-        date_list = range(20160125, 20160130)
-        route_stop_dist = pd.read_csv('route_stop_dist.csv')
-        stop_num = 4
-        route_list = list(set(route_stop_dist.route_id))
-        history_list = []
-        for current_date in date_list:
-            filename = 'bus_time_' + str(current_date) + '.csv'
-            history_list.append(pd.read_csv(path + 'data/history/' + filename))
-        full_history = pd.concat(history_list)
-        api_data_list = []
-        time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
-        current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
-        api_data_list.append(current_api_data)
-        time_list = ['18:00:00', '18:05:00', '18:10:00', '18:15:00', '18:20:00', '18:25:00', '18:30:00']
-        current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
-        api_data_list.append(current_api_data)
-        api_data = pd.concat(api_data_list)
-        api_data.to_csv('api_data.csv')
-        print "complete exporting the api_data.csv file"
-    print "complete data collection"
+# if __name__ == '__main__':
+#     file_list = os.listdir('./')
+#     # download weather information
+#     if 'weather.csv' not in file_list:
+#         print "download weather.csv file"
+#         download_weather('20160101', '20160131')
+#         print "complete downloading weather information"
+#     # export the route dist data
+#     if 'route_stop_dist.csv' not in file_list:
+#         print "export route_stop_dist.csv file"
+#         trips, stop_times, history = read_data()
+#         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
+#         route_stop_dist.to_csv('route_stop_dist.csv')
+#         print "complete exporting the route_stop_dist.csv file"
+#     # export the segment data
+#     if 'original_segment.csv' not in file_list:
+#         print "export original_segment.csv file"
+#         selected_trips = select_trip_list()
+#         weather_df = pd.read_csv('weather.csv')
+#         full_history = filter_history_data(20160104, 20160123, selected_trips)
+#         stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
+#         segment_df = generate_original_segment(full_history, weather_df, stop_times)
+#         segment_df.to_csv('original_segment.csv')
+#         print "complete exporting the original_segement.csv file"
+#     if 'segment.csv' not in file_list:
+#         print "export segment.csv file"
+#         segment_df = improve_dataset()
+#         segment_df.to_csv('segment.csv')
+#         print "complete exporting the segment.csv file"
+#     if "final_segment.csv" not in file_list:
+#         print "export final segment.csv file"
+#         segment_df = pd.read_csv('segment.csv')
+#         final_segment = fix_bug_segment(segment_df)
+#         final_segment.to_csv('final_segment.csv')
+#         print "complete exporting the final_segment.csv file"
+#     # export the api data
+#     if 'api_data.csv' not in file_list:
+#         print "export api_data.csv file"
+#         date_list = range(20160125, 20160130)
+#         route_stop_dist = pd.read_csv('route_stop_dist.csv')
+#         stop_num = 4
+#         route_list = list(set(route_stop_dist.route_id))
+#         history_list = []
+#         for current_date in date_list:
+#             filename = 'bus_time_' + str(current_date) + '.csv'
+#             history_list.append(pd.read_csv(path + 'data/history/' + filename))
+#         full_history = pd.concat(history_list)
+#         api_data_list = []
+#         time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
+#         current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+#         api_data_list.append(current_api_data)
+#         time_list = ['18:00:00', '18:05:00', '18:10:00', '18:15:00', '18:20:00', '18:25:00', '18:30:00']
+#         current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+#         api_data_list.append(current_api_data)
+#         api_data = pd.concat(api_data_list)
+#         api_data.to_csv('api_data.csv')
+#         print "complete exporting the api_data.csv file"
+#     print "complete data collection"
