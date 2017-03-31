@@ -277,7 +277,7 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
         service_date, trip_id, target_stop = name
         route_id = item.iloc[0]['route_id']
         single_route_stop_dist = route_stop_dist[route_stop_dist.route_id == route_id]
-        stop_sequence = list(single_route_stop_dist.stop_id)
+        stop_sequence = [str(int(stop_id)) for stop_id in list(single_route_stop_dist.stop_id)]
         target_index = stop_sequence.index(target_stop)
         dist_along_route = single_route_stop_dist[single_route_stop_dist.stop_id == target_stop].iloc[0]['dist_along_route']
         vehicle_id = item.iloc[0]['vehicle_id']
