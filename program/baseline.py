@@ -165,7 +165,7 @@ for row in api_data:
     print "length of the api data is: ", len(api_data)
     average_travel_duration = preprocessed_segment_data['travel_duration'].mean()
     for i in xrange(len(api_data)):
-        if i % 1000 == 0:
+        if i % 100 == 0:
             print i
         item = api_data.iloc[i]
         trip_id = item.get('trip_id')
