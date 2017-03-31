@@ -120,7 +120,10 @@ def calculate_time_from_stop(segment_df, dist_along_route, prev_record, next_rec
     distance_stop_bus = next_record.get('dist_along_route') - dist_along_route
     ratio = float(distance_stop_bus) / float(distance_stop_stop)
     assert ratio < 1
-    travel_duration = segment_df[(segment_df.segment_start == prev_record.get('stop_id')) & (segment_df.segment_end == next_record.get('stop_id'))].iloc[0]['travel_duration']
+    try:
+        travel_duration = segment_df[(segment_df.segment_start == prev_record.get('stop_id')) & (segment_df.segment_end == next_record.get('stop_id'))].iloc[0]['travel_duration']
+    except:
+        travel_duration = preprocessed_segment_data['travel_duration'].mean()
     time_from_stop = travel_duration * ratio
     return time_from_stop
 
@@ -160,6 +163,7 @@ for row in api_data:
     """
     result = pd.DataFrame(columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time'])
     print "length of the api data is: ", len(api_data)
+    average_travel_duration = preprocessed_segment_data['travel_duration'].mean()
     for i in xrange(len(api_data)):
         if i % 1000 == 0:
             print i
@@ -174,6 +178,8 @@ for row in api_data:
         vehicle_id = item.get('vehicle_id')
         time_of_day = item.get('time_of_day')
         service_date = item.get('date')
+        if dist_along_route >= single_route_stop_dist.iloc[-1].dist_along_route:
+            continue
         for j in range(1, len(stop_sequence)):
             if single_route_stop_dist.iloc[j - 1].dist_along_route < dist_along_route < single_route_stop_dist.iloc[j].dist_along_route:
                 prev_record = single_route_stop_dist.iloc[j - 1]
@@ -188,7 +194,6 @@ for row in api_data:
         next_index = stop_sequence.index(next_record.get('stop_id'))
         count = target_index - next_index
         if count < 0:
-            print "bus has passed this stop: ", target_stop, trip_id
             continue
         elif count == 0:
             total_travel_duration = calculate_time_from_stop(preprocessed_segment_data, dist_along_route, prev_record, next_record)
@@ -199,10 +204,7 @@ for row in api_data:
                 segment_end = stop_sequence[j + 1]
                 segment_record = preprocessed_segment_data[(preprocessed_segment_data.segment_start == segment_start) & (preprocessed_segment_data.segment_end == segment_end)]
                 if len(segment_record) == 0:
-                    current_distance = single_route_stop_dist[single_route_stop_dist.stop_id == segment_end].iloc[0].dist_along_route - single_route_stop_dist[single_route_stop_dist.stop_id == segment_start].iloc[0].dist_along_route
-                    prev_distance = single_route_stop_dist[single_route_stop_dist.stop_id == stop_sequence[j]].iloc[0].dist_along_route - single_route_stop_dist[single_route_stop_dist.stop_id == stop_sequence[j - 1]].iloc[0].dist_along_route
-                    ratio = float(current_distance) / float(prev_distance)
-                    # TODO bug is here
+                    single_travel_duration = average_travel_duration
                 else:
                     single_travel_duration = segment_record.iloc[0]['travel_duration']
                 total_travel_duration += single_travel_duration
@@ -210,6 +212,47 @@ for row in api_data:
             total_travel_duration += time_from_stop
         result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, time_of_day, service_date, dist_along_route, count + 1, total_travel_duration]
     return result
+
+
+
+"""
+Build the empty dataframe
+for row in segment_df:
+    get trip_id, route_id, target_stop, service_date, etc
+    get single_history data according to the trip id and the service date
+    get single_route_stop_dist according to the route_id
+    get stop_sequence from single_route_stop_dist
+    get the dist_along_route for the target_stop from the single_route_stop_dist
+    set prev_index, next_index = stop_sequence.index(target_stop)
+    while stop_sequence(prev_index) not in set(single_history.next_stop_id):
+        prev_index -= 1
+        if prev_index == -1:
+            break
+    if prev_index == -1:
+        continue
+    prev_stop = stop_sequence(prev_index)
+    next_index += 1
+    while stop_sequence(next_index) not in set(single_history.next_stop_id):
+        next_index += 1
+        if next_index == len(stop_sequence):
+            break
+    if next_index == len(stop_sequence):
+        continue
+    next_stop = stop_sequence(next_index)
+    prev_record = single_history[single_history.next_stop_id == prev_stop].iloc[-1]
+    if prev_record.dist_from_stop == 0:
+        actual_arrival_time is the timestamp
+        save the record
+        continue to next row
+    next_record = single_history[single_history.next_stop_id == next_stop].iloc[-1]
+    prev_time = prev_record.get('timestamp')
+    next_time = prev_record.get('timestamp')
+    travel_duration = next_time - prev_time
+    prev_distance = prev_record.get('dist_along_route') - prev_record.get('dist_from_stop')
+    next_distance = prev_record.get('dist_along_route') - prev_record.get('dist_from_stop')
+"""
+def generate_actual_arrival_time(full_history, segment_df):
+    pass
 
 
 #################################################################################################################
@@ -220,6 +263,7 @@ preprocessed_segment_data = pd.read_csv('segment_baseline1.csv')
 route_stop_dist = pd.read_csv('route_stop_dist.csv')
 trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
 estimated_result = generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_stop_dist, trips)
+estimated_result.to_csv('estimated_segment.csv')
 
 
 #################################################################################################################
