@@ -338,15 +338,19 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
 # trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
 # estimated_result = generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_stop_dist, trips)
 # estimated_result.to_csv('estimated_segment.csv')
-# date_list = range(20160125, 20160130)
-# history_list = []
-# for current_date in date_list:
-#     filename = 'bus_time_' + str(current_date) + '.csv'
-#     history_list.append(pd.read_csv(path + 'data/history/' + filename))
-# full_history = pd.concat(history_list, ignore_index=True)
-# full_history.to_csv('test_full_history.csv')
-full_history = pd.read_csv('test_full_history.csv')
 segment_df = pd.read_csv('estimated_segment.csv')
+trip_set = set(segment_df.trip_id)
+date_list = range(20160125, 20160130)
+history_list = []
+for current_date in date_list:
+    filename = 'bus_time_' + str(current_date) + '.csv'
+    print filename
+    current_history = pd.read_csv(path + 'data/history/' + filename)
+    current_history = current_history[current_history.trip_id.isin(trip_set)]
+    history_list.append(current_history)
+full_history = pd.concat(history_list, ignore_index=True)
+full_history.to_csv('test_full_history.csv')
+# full_history = pd.read_csv('test_full_history.csv')
 route_stop_dist = pd.read_csv('route_stop_dist.csv')
 baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
 baseline_result.to_csv('baseline1result.csv')
