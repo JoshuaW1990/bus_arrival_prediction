@@ -165,7 +165,7 @@ for row in api_data:
     print "length of the api data is: ", len(api_data)
     average_travel_duration = preprocessed_segment_data['travel_duration'].mean()
     for i in xrange(len(api_data)):
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print i
         item = api_data.iloc[i]
         trip_id = item.get('trip_id')
@@ -344,6 +344,7 @@ full_history = pd.read_csv('test_full_history.csv')
 weather_df = pd.read_csv('weather.csv')
 estimated_result_list = []
 for current_date in range(20160125, 20160130):
+    print current_date
     single_history = full_history[full_history.service_date == current_date]
     weather = weather_df[weather_df.date == current_date].iloc[0]['result']
     current_result = generate_estimated_arrival_time(grouped_api_data.get_group((current_date, True)), grouped_segment_df.get_group((weather, True)), route_stop_dist, trips)
