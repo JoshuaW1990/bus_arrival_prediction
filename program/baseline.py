@@ -271,32 +271,33 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
     grouped_list = list(segment_df.groupby(['service_date', 'trip_id', 'stop_id']))
     print 'length of the segment_df is: ', len(grouped_list)
     for i in xrange(len(grouped_list)):
-        if i % 1000 == 0:
+        if i % 100 == 0:
             print i
         name, item = grouped_list[i]
         service_date, trip_id, target_stop = name
         route_id = item.iloc[0]['route_id']
         single_route_stop_dist = route_stop_dist[route_stop_dist.route_id == route_id]
-        stop_sequence = [str(int(stop_id)) for stop_id in list(single_route_stop_dist.stop_id)]
+        stop_sequence = list(single_route_stop_dist.stop_id)
+        stop_sequence_str = [str(int(stop_id)) for stop_id in stop_sequence]
         target_index = stop_sequence.index(target_stop)
         dist_along_route = single_route_stop_dist[single_route_stop_dist.stop_id == target_stop].iloc[0]['dist_along_route']
         vehicle_id = item.iloc[0]['vehicle_id']
         single_history = full_history[full_history.service_date == service_date]
         prev_index, next_index = target_index, target_index + 1
-        while stop_sequence[prev_index] not in set(single_history.next_stop_id):
+        while stop_sequence_str[prev_index] not in set(single_history.next_stop_id):
             prev_index -= 1
             if prev_index == -1:
                 break
         if prev_index == -1:
             continue
-        prev_stop = stop_sequence[prev_index]
-        while stop_sequence[next_index] not in set(single_history.next_stop_id):
+        prev_stop = stop_sequence_str[prev_index]
+        while stop_sequence_str[next_index] not in set(single_history.next_stop_id):
             next_index += 1
             if next_index == len(stop_sequence):
                 break
         if next_index == len(stop_sequence):
             continue
-        next_stop = stop_sequence[next_index]
+        next_stop = stop_sequence_str[next_index]
         prev_record = single_history[single_history.next_stop_id == prev_stop].iloc[-1]
         prev_time = prev_record.get('timestamp')
         prev_time = datetime.strptime(prev_time[11:19], '%H:%M:%S')
@@ -308,8 +309,8 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
             next_time = datetime.strptime(next_time[11:19], '%H:%M:%S')
             travel_duration = next_time - prev_time
             travel_duration = travel_duration.total_seconds()
-            prev_distance = prev_record.get('dist_along_route') - prev_record.get('dist_from_stop')
-            next_distance = next_record.get('dist_along_route') - next_record.get('dist_from_stop')
+            prev_distance = float(prev_record.get('dist_along_route')) - float(prev_record.get('dist_from_stop'))
+            next_distance = float(next_record.get('dist_along_route')) - float(next_record.get('dist_from_stop'))
             distance_prev_next = next_distance - prev_distance
             distance_prev_stop = single_route_stop_dist[single_route_stop_dist.stop_id == target_stop].iloc[0]['dist_along_route'] - prev_distance
             ratio = distance_prev_stop / distance_prev_next
@@ -337,12 +338,14 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
 # trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
 # estimated_result = generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_stop_dist, trips)
 # estimated_result.to_csv('estimated_segment.csv')
-date_list = range(20160125, 20160130)
-history_list = []
-for current_date in date_list:
-    filename = 'bus_time_' + str(current_date) + '.csv'
-    history_list.append(pd.read_csv(path + 'data/history/' + filename))
-full_history = pd.concat(history_list, ignore_index=True)
+# date_list = range(20160125, 20160130)
+# history_list = []
+# for current_date in date_list:
+#     filename = 'bus_time_' + str(current_date) + '.csv'
+#     history_list.append(pd.read_csv(path + 'data/history/' + filename))
+# full_history = pd.concat(history_list, ignore_index=True)
+# full_history.to_csv('test_full_history.csv')
+full_history = pd.read_csv('test_full_history.csv')
 segment_df = pd.read_csv('estimated_segment.csv')
 route_stop_dist = pd.read_csv('route_stop_dist.csv')
 baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
