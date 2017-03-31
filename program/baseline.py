@@ -123,7 +123,7 @@ def calculate_time_from_stop(segment_df, dist_along_route, prev_record, next_rec
     try:
         travel_duration = segment_df[(segment_df.segment_start == prev_record.get('stop_id')) & (segment_df.segment_end == next_record.get('stop_id'))].iloc[0]['travel_duration']
     except:
-        travel_duration = preprocessed_segment_data['travel_duration'].mean()
+        travel_duration = segment_df['travel_duration'].mean()
     time_from_stop = travel_duration * ratio
     return time_from_stop
 
@@ -346,6 +346,7 @@ full_history = pd.concat(history_list, ignore_index=True)
 segment_df = pd.read_csv('estimated_segment.csv')
 route_stop_dist = pd.read_csv('route_stop_dist.csv')
 baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
+
 
 #################################################################################################################
 #                                    main function                                                              #
