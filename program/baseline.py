@@ -7,8 +7,10 @@ The difference lies in the data preprocess section. The prediction phase should 
 """
 
 import pandas as pd
-from datetime import datetime
+import os
+from datetime import datetime, timedelta
 
+path = '../'
 
 #################################################################################################################
 #                                data preproces                                                                 #
@@ -21,16 +23,9 @@ Calculate the average travel duration for the segment data
 Use the groupby function for the segment dataframe
 """
 
-def read_dataset():
-    """
-    read the segment.csv file to obtain the segment dataset
-    :return: dataframe of the segemnt.csv file
-    """
-    segment_df = pd.read_csv('segment.csv')
-    return segment_df
-
 
 def preprocess_baseline1(segment_df):
+    # TODO prepare the dataset for the baseline algorithm
     """
     preprocession for the simplest baseline: not considering the weather and the time
     Algorithm:
@@ -44,26 +39,206 @@ def preprocess_baseline1(segment_df):
     :param segment_df: 
     :return: the preprocessed segment dataframe
     """
-    grouped = segment_df.groupby(['segment_start', 'segment_end'])
+    grouped_list = list(segment_df.groupby(['segment_start', 'segment_end']))
+    print "length of the grouped list: ", len(grouped_list)
     result = pd.DataFrame(columns=['segment_start', 'segment_end', 'travel_duration'])
-    for name, item in grouped:
+    for i in xrange(len(grouped_list)):
+        if i % 100 == 0:
+            print i
+        name, item = grouped_list[i]
         segment_start, segment_end = name
         if segment_start == segment_end:
             continue
         travel_duration_list = list(item['travel_duration'])
         average_travel_duration = sum(travel_duration_list) / float(len(travel_duration_list))
-        if average_travel_duration < 0:
-            print name
-        if average_travel_duration > 10:
-            print name
         result.loc[len(result)] = [segment_start, segment_end, average_travel_duration]
     return result
 
+
+def preprocess_baseline2(segment_df, rush_hour):
+    """
+    Preprocess the segment data considering the weather and the rush hour
+    
+    Algorithm:
+    Preprocess segment_df to add a new column of rush hour
+    split the dataframe with groupby(segment_start, segment_end, weather, rush_hour)
+    Define the new dataframe
+    For name, item in grouped:
+        calcualte the average travel duration
+        save the record into the new dataframe
+    
+    :param segment_df: dataframe after adding the rush hour from final_segment.csv file
+    :param rush_hour: tuple to express which is the rush hour, example: ('17:00:00', '20:00:00')
+    :return: dataframe for the baseline2
+    """
+    # Preprocess segment_df to add a new column of rush hour
+    rush_hour_column = segment_df['timestamp'].apply(lambda x: x[11:19] < rush_hour[1] and x[11:19] > rush_hour[0])
+    new_segment_df = segment_df
+    new_segment_df['rush_hour'] = rush_hour_column
+    grouped_list = list(new_segment_df.groupby(['segment_start', 'segment_end', 'weather', 'rush_hour']))
+    print "length of the grouped_list is: ", len(grouped_list)
+    result = pd.DataFrame(columns=['segment_start', 'segment_end', 'travel_duration', 'weather', 'rush_hour'])
+    for i in xrange(len(grouped_list)):
+        if i % 1000 == 0:
+            print i
+        name, item = grouped_list[i]
+        segment_start, segment_end, weather, rush_hour_var = name
+        travel_duration_list = list(item['travel_duration'])
+        average_travel_duration = sum(travel_duration_list) / float(len(travel_duration_list))
+        result.loc[len(result)] = [segment_start, segment_end, average_travel_duration, weather, rush_hour_var]
+    return result
+
+
+#################################################################################################################
+#                                predict section                                                                #
+#################################################################################################################
+"""
+Predict the arrival time for each record in the api data
+"""
+
+def calculate_time_from_stop(segment_df, dist_along_route, prev_record, next_record):
+    """
+    Calculate the time from stop within the tuple (prev_record, next_record)
+    
+    Algorithm:
+    if prev_record = next_record:
+        the bus is parking at the stop, return 0
+    Calcualte the distance within the tuple
+    Calculate the distance between the current location and the prev record
+    Calcualte the ratio of these two distances
+    Use the ratio to calcualte the time_from_stop
+    
+    :param segment_df: dataframe for the preprocessed segment data
+    :param dist_along_route: distance between the intial stop and the current location of the bus
+    :param prev_record: single record of the route_stop_dist.csv file
+    :param next_record: single record of the route_stop_dist.csv file
+    :return: total seconds of the time_from_stop
+    """
+    if prev_record.get('stop_id') == next_record.get('stop_id'):
+        return 0.0
+    distance_stop_stop = next_record.get('dist_along_route') - prev_record.get('dist_along_route')
+    distance_stop_bus = next_record.get('dist_along_route') - dist_along_route
+    ratio = float(distance_stop_bus) / float(distance_stop_stop)
+    assert ratio < 1
+    travel_duration = segment_df[(segment_df.segment_start == prev_record.get('stop_id')) & (segment_df.segment_end == next_record.get('stop_id'))].iloc[0]['travel_duration']
+    time_from_stop = travel_duration * ratio
+    return time_from_stop
+
+
+
+def generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_stop_dist, trips):
+    """
+    Predict the estimated arrival time according to the api data
+    
+    Algorithm:
+Build the empty dataframe
+for row in api_data:
+    get the route_id according to the trip id and the trips.txt file
+    get the stop sequence and the dist_along_route according to the route id
+    get the end_index according to the stop id
+    get the (prev, next) stop tuple according to the dist_along_route in the record
+    get the count = end_index - next_index
+    if count < 0:
+        the bus has passed
+        continue to next row
+    if count = 0, the next stop is the target stop:
+        calcualte the time_from_stop for (prev, next) tuple
+        save the result as the estimated time
+    if count > 0:
+        get the stop list from next_stop to target_stop
+        sum the travel duration for all of them
+        calculate the time_from_stop for (prev, next) tuple
+        add the total travel duration with the time_from_stop(prev, next)
+        save the result as the estimated time
+    save the result into the dataframe
+    
+    :param api_data: dataframe for the api_data.csv
+    :param preprocessed_segment_data: dataframe for the preprocessed final_segment.csv file according to different baseline algorithm
+    :param route_stop_dist: dataframe of the route_stop_dist.csv file
+    :param trips: dataframe for the trips.txt file
+    :return: dataframe to store the result including the esitmated arrival time
+    """
+    result = pd.DataFrame(columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time'])
+    print "length of the api data is: ", len(api_data)
+    for i in xrange(len(api_data)):
+        if i % 1000 == 0:
+            print i
+        item = api_data.iloc[i]
+        trip_id = item.get('trip_id')
+        route_id = trips[trips.trip_id == trip_id].iloc[0].route_id
+        single_route_stop_dist = route_stop_dist[route_stop_dist.route_id == route_id]
+        stop_sequence = list(single_route_stop_dist.stop_id)
+        target_stop = item.get('stop_id')
+        target_index = stop_sequence.index(target_stop)
+        dist_along_route = item.get('dist_along_route')
+        vehicle_id = item.get('vehicle_id')
+        time_of_day = item.get('time_of_day')
+        service_date = item.get('date')
+        for j in range(1, len(stop_sequence)):
+            if single_route_stop_dist.iloc[j - 1].dist_along_route < dist_along_route < single_route_stop_dist.iloc[j].dist_along_route:
+                prev_record = single_route_stop_dist.iloc[j - 1]
+                next_record = single_route_stop_dist.iloc[j]
+                break
+            elif single_route_stop_dist.iloc[j - 1].dist_along_route == dist_along_route:
+                prev_record = single_route_stop_dist.iloc[j - 1]
+                next_record = prev_record
+                break
+            else:
+                continue
+        next_index = stop_sequence.index(next_record.get('stop_id'))
+        count = target_index - next_index
+        if count < 0:
+            print "bus has passed this stop: ", target_stop, trip_id
+            continue
+        elif count == 0:
+            total_travel_duration = calculate_time_from_stop(preprocessed_segment_data, dist_along_route, prev_record, next_record)
+        else:
+            total_travel_duration = 0.0
+            for j in xrange(next_index, target_index):
+                segment_start = stop_sequence[j]
+                segment_end = stop_sequence[j + 1]
+                segment_record = preprocessed_segment_data[(preprocessed_segment_data.segment_start == segment_start) & (preprocessed_segment_data.segment_end == segment_end)]
+                if len(segment_record) == 0:
+                    current_distance = single_route_stop_dist[single_route_stop_dist.stop_id == segment_end].iloc[0].dist_along_route - single_route_stop_dist[single_route_stop_dist.stop_id == segment_start].iloc[0].dist_along_route
+                    prev_distance = single_route_stop_dist[single_route_stop_dist.stop_id == stop_sequence[j]].iloc[0].dist_along_route - single_route_stop_dist[single_route_stop_dist.stop_id == stop_sequence[j - 1]].iloc[0].dist_along_route
+                    ratio = float(current_distance) / float(prev_distance)
+                    # TODO bug is here
+                else:
+                    single_travel_duration = segment_record.iloc[0]['travel_duration']
+                total_travel_duration += single_travel_duration
+            time_from_stop = calculate_time_from_stop(preprocessed_segment_data, dist_along_route, prev_record, next_record)
+            total_travel_duration += time_from_stop
+        result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, time_of_day, service_date, dist_along_route, count + 1, total_travel_duration]
+    return result
 
 
 #################################################################################################################
 #                                debug section                                                                  #
 #################################################################################################################
-segment_df = read_dataset()
-new_segment_df = preprocess_baseline1(segment_df)
+api_data = pd.read_csv('api_data.csv')
+preprocessed_segment_data = pd.read_csv('segment_baseline1.csv')
+route_stop_dist = pd.read_csv('route_stop_dist.csv')
+trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
+estimated_result = generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_stop_dist, trips)
 
+
+#################################################################################################################
+#                                    main function                                                              #
+#################################################################################################################
+
+#
+# if __name__ == "__main__":
+#     file_list = os.listdir('./')
+#     print "prepare the segment dataset for different baseline algorithm"
+#     segment_df = pd.read_csv('final_segment.csv')
+#     if 'segment_baseline1.csv' not in file_list:
+#         print "export the segment data for baseline1"
+#         new_segment_df = preprocess_baseline1(segment_df)
+#         new_segment_df.to_csv('segment_baseline1.csv')
+#         print "complete exporting the segment data for baseline1"
+#     if "segment_baseline2.csv" not in file_list:
+#         print "export the segment data for baseline2"
+#         rush_hour = ('17:00:00', '20:00:00')
+#         new_segment_df = preprocess_baseline2(segment_df, rush_hour)
+#         new_segment_df.to_csv('segment_baseline2.csv')
+#         print "complete exporting the segment data for baseline2"

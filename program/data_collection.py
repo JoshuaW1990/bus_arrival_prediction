@@ -629,6 +629,12 @@ def fix_bug_segment(segment_df):
         current_segment = fix_bug_single_segment(item)
         result_list.append(current_segment)
     result = pd.concat(result_list)
+    columns = []
+    for item in result.columns:
+        if item.startswith('Unnamed'):
+            columns.append(item)
+    result.drop(columns, axis = 1, inplace=True)
+    # check the travel duration
     return result
 
 
@@ -656,15 +662,14 @@ def fix_bug_single_segment(segment_df):
         # check whether the row is duplicated
         if prev_record.segment_start == next_record.segment_start and prev_record.segment_end == next_record.segment_end:
             continue
-        # check the travel duration
-        if prev_record.travel_duration > 600:
-            continue
         result.loc[len(result)] = prev_record
     if len(result) == 0:
         result.loc[len(result)] = segment_df.iloc[-1]
     elif result.iloc[-1].segment_start != segment_df.iloc[-1].segment_start and result.iloc[-1].segment_end != \
             segment_df.iloc[-1].segment_end:
         result.loc[len(result)] = segment_df.iloc[-1]
+    mean_travel_duration = result['travel_duration'].mean()
+    result['travel_duration'] = result['travel_duration'].apply(lambda x: mean_travel_duration if x > 600 else x)
     return result
 
 
@@ -823,17 +828,11 @@ def generate_single_api(current_time, route_stop_dist, route_id, single_history,
 #################################################################################################################
 #                                    debug section                                                              #
 #################################################################################################################
-# date_list = range(20160125, 20160130)
-# route_stop_dist = pd.read_csv('route_stop_dist.csv')
-# stop_num = 2
-# route_list = ['X14', 'X11', 'X42', 'S66']
-# history_list = []
-# for current_date in date_list:
-#     filename = 'bus_time_' + str(current_date) + '.csv'
-#     history_list.append(pd.read_csv(path + 'data/history/' + filename))
-# full_history = pd.concat(history_list)
-# time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
-# api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+print "export final segment.csv file"
+segment_df = pd.read_csv('segment.csv')
+final_segment = fix_bug_segment(segment_df)
+final_segment.to_csv('final_segment.csv')
+print "complete exporting the final_segment.csv file"
 
 
 #################################################################################################################
