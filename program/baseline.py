@@ -268,23 +268,20 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
     """
     columns = segment_df.columns + ['actual_arrival_time']
     result = pd.DataFrame(columns=columns)
-    print 'length of the segment_df is: ', len(segment_df)
-    for i in xrange(len(segment_df)):
+    grouped_list = list(segment_df.groupby(['service_date', 'trip_id', 'stop_id']))
+    print 'length of the segment_df is: ', len(grouped_list)
+    for i in xrange(len(grouped_list)):
         if i % 1000 == 0:
             print i
+        name, item = grouped_list[i]
+        service_date, trip_id, target_stop = name
         item = segment_df.iloc[i]
-        trip_id = item.get('trip_id')
-        route_id = item.get('route_id')
+        route_id = item.iloc[0]['route_id']
         single_route_stop_dist = route_stop_dist[route_stop_dist.route_id == route_id]
         stop_sequence = list(single_route_stop_dist.stop_id)
-        target_stop = item.get('stop_id')
         target_index = stop_sequence.index(target_stop)
         dist_along_route = single_route_stop_dist[single_route_stop_dist.stop_id == target_stop].iloc[0]['dist_along_route']
-        vehicle_id = item.get('vehicle_id')
-        time_of_day = item.get('time_of_day')
-        service_date = item.get('service_date')
-        stop_num_from_call = item.get('stop_num_from_call')
-        estimated_arrival_time = item.get('estimated_arrival_time')
+        vehicle_id = item.iloc[0]['vehicle_id']
         single_history = full_history[full_history.service_date == service_date]
         prev_index, next_index = target_index, target_index + 1
         while stop_sequence[prev_index] not in set(single_history.next_stop_id):
@@ -304,26 +301,30 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
         prev_record = single_history[single_history.next_stop_id == prev_stop].iloc[-1]
         prev_time = prev_record.get('timestamp')
         prev_time = datetime.strptime(prev_time[11:19], '%H:%M:%S')
-        time_of_day = datetime.strptime(time_of_day, '%H:%M:%S')
         if prev_record.dist_from_stop == 0:
-            actual_arrival_time = prev_time - time_of_day
-            actual_arrival_time = actual_arrival_time.total_seconds()
+            time_from_stop = 0.0
+        else:
+            next_record = single_history[single_history.next_stop_id == next_stop].iloc[-1]
+            next_time = next_record.get('timestamp')
+            next_time = datetime.strptime(next_time[11:19], '%H:%M:%S')
+            travel_duration = next_time - prev_time
+            travel_duration = travel_duration.total_seconds()
+            prev_distance = prev_record.get('dist_along_route') - prev_record.get('dist_from_stop')
+            next_distance = next_record.get('dist_along_route') - next_record.get('dist_from_stop')
+            distance_prev_next = next_distance - prev_distance
+            distance_prev_stop = single_route_stop_dist[single_route_stop_dist.stop_id == target_stop].iloc[0]['dist_along_route'] - prev_distance
+            ratio = distance_prev_stop / distance_prev_next
+            time_from_stop = ratio * travel_duration
+        for j in xrange(len(item)):
+            single_record = item.iloc[j]
+            time_of_day = single_record.get('time_of_day')
+            stop_num_from_call = single_record.get('stop_num_from_call')
+            estimated_arrival_time = single_record.get('estimated_arrival_time')
+            time_of_day = datetime.strptime(time_of_day, '%H:%M:%S')
+            time_prev_bus = prev_time - time_of_day
+            time_prev_bus = time_prev_bus.total_seconds()
+            actual_arrival_time = time_from_stop + time_prev_bus
             result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, str(time_of_day.time()), service_date, dist_along_route, stop_num_from_call, estimated_arrival_time, actual_arrival_time]
-        next_record = single_history[single_history.next_stop_id == next_stop].iloc[-1]
-        next_time = next_record.get('timestamp')
-        next_time = datetime.strptime(next_time[11:19], '%H:%M:%S')
-        travel_duration = next_time - prev_time
-        travel_duration = travel_duration.total_seconds()
-        prev_distance = prev_record.get('dist_along_route') - prev_record.get('dist_from_stop')
-        next_distance = next_record.get('dist_along_route') - next_record.get('dist_from_stop')
-        distance_prev_next = next_distance - prev_distance
-        distance_prev_stop = single_route_stop_dist[single_route_stop_dist.stop_id == target_stop].iloc[0]['dist_along_route'] - prev_distance
-        ratio = distance_prev_stop / distance_prev_next
-        time_from_stop = ratio * travel_duration
-        time_prev_bus = prev_time - time_of_day
-        time_prev_bus = time_prev_bus.total_seconds()
-        actual_arrival_time = time_from_stop + time_prev_bus
-        result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, str(time_of_day.time()), service_date, dist_along_route, stop_num_from_call, estimated_arrival_time, actual_arrival_time]
     return result
 
 
