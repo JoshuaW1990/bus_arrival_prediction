@@ -346,6 +346,7 @@ full_history = pd.concat(history_list, ignore_index=True)
 segment_df = pd.read_csv('estimated_segment.csv')
 route_stop_dist = pd.read_csv('route_stop_dist.csv')
 baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
+baseline_result.to_csv('baseline1result.csv')
 
 
 #################################################################################################################
