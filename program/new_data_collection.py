@@ -200,15 +200,90 @@ generate_api_data
 
 
 
+
+def calcualte_arrival_time(stop_dist, prev_dist, next_dist, prev_timestamp, next_timestamp):
+    """
+     Calculate the arrival time according to the given tuple (prev_dist, next_dist), the current location, the timestamp of the prev location, and the timestamp of the next location
+
+    Algorithm:
+    distance_prev_next = next_dist - prev_dist
+    distance_prev_stop = stop_distance - prev_dist
+    ratio = distance_prev_stop / distance_prev_next
+    duration_prev_next = next_timestamp - prev_timestamp
+    duration_prev_stop = duration_prev_next * ratio
+    stop_timestamp = prev_timestamp + duration_prev_stop
+    return the stop_timestamp
+
+    :Param stop_dist: the distance of the target stop between the prev and next tuple
+    :Param prev_dist: the distance of the location of the bus at the previous record
+    :Param next_dist: the distance of the location of the bus at the next record
+    :Param prev_timestamp: the timestamp of the bus at the previous record
+    :Param next_timestamp: the timestamp of the bus at the next record
+    :Return result: the timestamp of the bus arrival the target stop
+    """
+    distance_prev_next = next_dist - prev_dist
+    distance_prev_stop = stop_dist - prev_dist
+    ratio = float(distance_prev_stop) / float(distance_prev_next)
+    duration_prev_next = next_timestamp - prev_timestamp
+    duration_prev_stop = ratio * duration_prev_next.total_seconds()
+    duration_prev_stop = timedelta(0, duration_prev_stop)
+    stop_timestamp = prev_timestamp + duration_prev_stop
+    return stop_timestamp
+
+
 """
-Calculate the arrival time according to the given tuple (prev, next), and the current location
+calculate arrival distance according to the given input: time_of_day, prev_dist, next_dist, prev_timestamp, next_timestamp
 
 Algorithm:
-get the distance for the tuple:
-    prev_distance = prev[dist_along_route - prev.dist_from_stop
+distance_bus_bus = next_dist - prev_dist
+duration_bus_bus = next_timestamp - prev_timestamp
+duration_bus_time = time_of_day - prev_timestamp
+ratio = duration_bus_time / duration_bus_bus
+distance_bus_time = distance_bus_bus * ratio
+dist_along_route = distance_bus_time + prev_dist
+return the dist_along_route
 """
-def calcualte_arrival_time():
-    pass
+def calculate_arrival_distance(time_of_day, prev_dist, next_dist, prev_timestamp, next_timestamp):
+    """
+    calculate arrival distance according to the given input: time_of_day, prev_dist, next_dist, prev_timestamp, next_timestamp
+
+    Algorithm:
+    distance_prev_next = next_dist - prev_dist
+    duration_prev_next = next_timestamp - prev_timestamp
+    duration_prev_time = time_of_day - prev_timestamp
+    ratio = duration_prev_time / duration_prev_next
+    distance_prev_time = distance_prev_next * ratio
+    dist_along_route = distance_prev_time + prev_dist
+    return the dist_along_route
+
+    :Param time_of_day: the given time for calculating the dist_along_route
+    :Param prev_dist: the distance of the location of the bus for the previous record in historical data
+    :Param next_dist: the distance of the location of the bus for the next record in historical data
+    :Param prev_timestamp: the timestamp of the bus for the previous record in historical data
+    :Param next_timestamp: the timestamp of the bus for the next record in historical data
+    :Return result: dist_along_route for the bus at the given time_of_day
+    """
+    duration_prev_next = next_timestamp - prev_timestamp
+    duration_prev_time = time_of_day - prev_timestamp
+    duration_prev_next = duration_prev_next.total_seconds()
+    duration_prev_time = duration_prev_time.total_seconds()
+    ratio = duration_prev_time / duration_prev_next
+    distance_prev_next = next_dist - prev_dist
+    distance_prev_time = distance_prev_next * ratio
+    dist_along_route = prev_dist + distance_prev_time
+    return dist_along_route
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
