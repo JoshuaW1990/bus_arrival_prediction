@@ -294,9 +294,9 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     Algorithm:
     Split the full historical data according to the service date, trip_id with groupby function
     For name, item in splitted historical dataset:
-        service date, trip_id = name
-        Split the item according to the vehicle_id, keep the data with the larget length of list for the vehicle_id
-        calcualte the travel duration within the segement of this segment df and save the result into list
+        service date, trip_id = name[0], name[1]
+        Find the vehicle id which is the majority elements in this column (For removing the abnormal value in historical data)
+        calcualte the travel duration within the segement of this splitted historical data and save the result into list
     concatenate the list
     :param full_history_var: the historical data after filtering
     :param weather: the dataframe for the weather information
@@ -372,8 +372,6 @@ def generate_original_segment_single_history(history, stop_sequence):
         segment_start, segment_end obtained
         travel_duration = next[1] - prev[1]
         timestamp = prev[1]
-        service_date = history[0].service_date
-        ...
         save the record to result
 
     :param history: single historical data
@@ -402,6 +400,7 @@ def generate_original_segment_single_history(history, stop_sequence):
         # calculate the distance for prev and next respectively
         prev_distance = float(prev_record.dist_along_route) - float(prev_record.dist_from_stop)
         next_distance = float(next_record.dist_along_route) - float(next_record.dist_from_stop)
+        # todo check the prev_distance
         if prev_distance == next_distance or prev_distance == 0:
             i += 1
             continue
@@ -429,88 +428,6 @@ def generate_original_segment_single_history(history, stop_sequence):
     return result
 
 
-
-
-# def improve_dataset_unit(single_trip, date_var, stop_sequence, segment_df):
-#     """
-#     This funciton is used to improve the dataset for a specific trip_id at a spacific date.
-#     """
-#     df = pd.DataFrame(columns=segment_df.colums)
-#     current_segmen_pair = segment_df[(segment_df.trip_id == single_trip) & (segment_df.service_date == date_var)]
-#     for i in xrange(1, len(current_segmen_pair)):
-#         segment_start = int(current_segmen_pair.iloc[i - 1].segment_start)
-#         segment_end = int(current_segmen_pair.iloc[i].segment_start)
-#         start_idx = stop_sequence.index(segment_start)
-#         end_idx = stop_sequence.index(segment_end)
-#         if end_idx - start_idx == 1:
-#             df.loc[len(df)] = current_segmen_pair.iloc[i - 1]
-#         else:
-#             skipped_stops = stop_sequence[start_idx + 1:end_idx]
-#             number_travel_duration = len(skipped_stops) + 1
-#             arrival_time1 = datetime.strptime(current_segmen_pair.iloc[i - 1].time_of_day, '%H:%M:%S')
-#             arrival_time2 = datetime.strptime(current_segmen_pair.iloc[i].time_of_day, '%H:%M:%S')
-#             timespan = arrival_time2 - arrival_time1
-#             total_duration = timespan.total_seconds()
-#             average_duration = total_duration / float(number_travel_duration)
-#             estimated_travel_time = timedelta(0, average_duration)
-#             tmp_total_stops = [segment_start] + skipped_stops + [segment_end]
-#             for j in xrange(len(tmp_total_stops) - 1):
-#                 segment_start = tmp_total_stops[j]
-#                 segment_end = tmp_total_stops[j + 1]
-#                 segment_pair = (segment_start, segment_end)
-#                 previous_arrival_time = current_segmen_pair.iloc[i - 1].time_of_day
-#                 estimated_arrival_time = datetime.strptime(previous_arrival_time, '%H:%M:%S')
-#                 for count in range(j):
-#                     estimated_arrival_time += estimated_travel_time
-#                 time_of_day = str(estimated_arrival_time)[11:19]
-#                 day_of_week = current_segmen_pair.iloc[0].day_of_week
-#                 weather = current_segmen_pair.iloc[0].weather
-#                 trip_id = single_trip
-#                 travel_duration = average_duration
-#                 df.loc[len(df)] = [segment_start, segment_end, segment_pair, time_of_day, day_of_week, date_var,
-#                                    weather,
-#                                    trip_id, travel_duration]
-#     return df
-#
-#
-# def improve_dataset():
-#     """
-#     algorithm:
-#     for each specific trip_id:
-#         obtain the date_list
-#         obtain the stop_sequence
-#         for each date in date_list:
-#             build the dataframe
-#             obtain the current_segment_pair for the specific trip_id and date
-#             obtain the segment_start sequence
-#             for each segment_start in the segment_start sequence:
-#                 find the corresponding index in the stop_sequence
-#                 find the index of the segment_end in the corresponding segment_pair
-#                 if the indices of these two are i and i + 1:
-#                     add the segment_pair into the new dataframe as the result
-#                 else:
-#                     use the index to find all the skipped stops from the stop_sequence
-#                     calculate the number of skipped travel duration within this segment
-#                     use the average value as the travel duration and add the stop arrival time for each skipped stops
-#                     add the segment_pair into the new dataframe as the result
-#
-#     """
-#     segment_df = pd.read_csv('original_segment.csv')
-#     stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
-#
-#     trips = set(segment_df.trip_id)
-#     print "length of the trips: ", len(trips)
-#     df_list = []
-#     for i, single_trip in enumerate(trips):
-#         if i % 50 == 0:
-#             print "index = ", i, single_trip
-#         date_list = list(set(segment_df[segment_df.trip_id == single_trip].service_date))
-#         stop_sequence = list(stop_times[stop_times.trip_id == single_trip].stop_id)
-#         for date_var in date_list:
-#             df = improve_dataset_unit(single_trip, date_var, stop_sequence, segment_df)
-#             df_list.append(df)
-#     result = pd.concat(df_list)
-#     return result
 
 def improve_dataset_unit(segment_df, stop_sequence):
     """
@@ -563,7 +480,7 @@ def improve_dataset():
     """
     algorithm:
     split the segment dataframe by groupby(service_date, trip_id)
-    result_list = [
+    result_list = []
     for name, item in grouped_segment:
         obtained the improved segment data for the item
         add the columns:  weather, service date, day_of_week, trip_id, vehicle_id
@@ -690,16 +607,13 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
     trip_id    vehicle_id    route_id    stop_id    time_of_day    date    dist_along_route
     
     Algorithm:
-    Read the full historical data for testing
-    Determine the test routes (2 ~ 4), and the corresponding stop sequence
-    
     Generate the set of trip id for test routes
     Generate the random test stop id for each test routes
-    Filtering the historical data with trip id, NAN
+    Filtering the historical data with trip id
     Generate the list of historical data Groupby(date, trip id)
     for each item in the list of the historical data:
         obtain the trip id and the date
-        obtain the correspnding route
+        obtain the corresponding route
         obtain the corresponding stop set
         for stop in stop set:
             for each time point in the time list:

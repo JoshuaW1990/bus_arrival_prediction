@@ -134,26 +134,26 @@ def generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_s
     Predict the estimated arrival time according to the api data
     
     Algorithm:
-Build the empty dataframe
-for row in api_data:
-    get the route_id according to the trip id and the trips.txt file
-    get the stop sequence and the dist_along_route according to the route id
-    get the end_index according to the stop id
-    get the (prev, next) stop tuple according to the dist_along_route in the record
-    get the count = end_index - next_index
-    if count < 0:
-        the bus has passed
-        continue to next row
-    if count = 0, the next stop is the target stop:
-        calcualte the time_from_stop for (prev, next) tuple
-        save the result as the estimated time
-    if count > 0:
-        get the stop list from next_stop to target_stop
-        sum the travel duration for all of them
-        calculate the time_from_stop for (prev, next) tuple
-        add the total travel duration with the time_from_stop(prev, next)
-        save the result as the estimated time
-    save the result into the dataframe
+    Build the empty dataframe
+    for row in api_data:
+        get the route_id according to the trip id and the trips.txt file
+        get the stop sequence and the dist_along_route according to the route id
+        get the end_index according to the stop id
+        get the (prev, next) stop tuple according to the dist_along_route in the record
+        get the count = end_index - next_index
+        if count < 0:
+            the bus has passed
+            continue to next row
+        if count = 0, the next stop is the target stop:
+            calcualte the time_from_stop for (prev, next) tuple
+            save the result as the estimated time
+        if count > 0:
+            get the stop list from next_stop to target_stop
+            sum the travel duration for all of them
+            calculate the time_from_stop for (prev, next) tuple
+            add the total travel duration with the time_from_stop(prev, next)
+            save the result as the estimated time
+        save the result into the dataframe
     
     :param api_data: dataframe for the api_data.csv
     :param preprocessed_segment_data: dataframe for the preprocessed final_segment.csv file according to different baseline algorithm
@@ -241,7 +241,7 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
                 break
         if next_index == len(stop_sequence):
             continue
-        next_stop = stop_sequence(next_index)
+        next_stop = stop_sequence(next_itndex)
         prev_record = single_history[single_history.next_stop_id == prev_stop].iloc[-1]
         prev_time = prev_record.get('timestamp')
         if prev_record.dist_from_stop == 0:
