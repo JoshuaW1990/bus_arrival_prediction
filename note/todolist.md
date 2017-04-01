@@ -1,5 +1,5 @@
 # TODO list
 
-1. Reorganize the files
-2. Edit the code and reexport the data for the complete dataset
-3. Rerun the test
+1. generate the api data from the training dataset such that we can use as a check for our algorithm
+2. unify the function for generating the timestamp and the distance
+3. use the other algorithms
