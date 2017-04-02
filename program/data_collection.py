@@ -363,7 +363,7 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     grouped = list(full_history_var.groupby(['service_date', 'trip_id']))
     print len(grouped)
     result_list = []
-    for index in range(152, len(grouped)):
+    for index in range(len(grouped)):
         name, single_history = grouped[index]
         if index % 1000 == 0:
             print index
