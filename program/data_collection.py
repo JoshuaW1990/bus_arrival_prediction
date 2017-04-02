@@ -363,7 +363,7 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     grouped = list(full_history_var.groupby(['service_date', 'trip_id']))
     print len(grouped)
     result_list = []
-    for index in range(len(grouped)):
+    for index in range(152, len(grouped)):
         name, single_history = grouped[index]
         if index % 1000 == 0:
             print index
@@ -436,7 +436,7 @@ def generate_original_segment_single_history(history, stop_sequence):
     segment_start, segment_end, timestamp, travel_duration
     """
     single_history = history[history.next_stop_id.isin(stop_sequence)]
-    if len(history) < 3:
+    if len(single_history) < 3:
         return None
     arrival_time_list = []
     grouped_list = list(single_history.groupby('next_stop_id'))
@@ -456,12 +456,14 @@ def generate_original_segment_single_history(history, stop_sequence):
     while i < len(history):
         prev_record = history.iloc[i - 1]
         next_record = history.iloc[i]
-        while stop_sequence.index(prev_record.next_stop_id) > stop_sequence.index(next_record.next_stop_id):
-            i += 2
+        if prev_record.next_stop_id == next_record.next_stop_id:
+            i -= 1
+            prev_record = history.iloc[i - 1]
+            next_record = history.iloc[i]
+        while stop_sequence.index(prev_record.next_stop_id) >= stop_sequence.index(next_record.next_stop_id):
+            i += 1
             if i == len(history):
                 break
-            print "stop_sequence.index(prev_record.next_stop_id) > stop_sequence.index(next_record.next_stop_id)"
-            print history.iloc[0]['next_stop'], history.iloc[0]['trip_id'], history.iloc[0]['timestamp']
             next_record = history.iloc[i]
         if i == len(history):
             break
@@ -469,6 +471,10 @@ def generate_original_segment_single_history(history, stop_sequence):
         next_distance = float(next_record.dist_along_route) - float(next_record.dist_from_stop)
         prev_timestamp = datetime.strptime(prev_record.timestamp, '%Y-%m-%dT%H:%M:%SZ')
         next_timestamp = datetime.strptime(next_record.timestamp, '%Y-%m-%dT%H:%M:%SZ')
+        if prev_distance == next_distance:
+            # the bus didn't move yet
+            i += 2
+            continue
         if prev_record.dist_from_stop == 0:
             # if prev.dist_from_stop is 0, the bus is 0, then save result into timestamp
             current_arrival_time = prev_timestamp
