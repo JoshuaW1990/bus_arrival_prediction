@@ -362,6 +362,7 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     format:
     segment_start, segment_end, timestamp, travel_duration, weather, service date, day_of_week, trip_id, vehicle_id
     """
+    full_history_var = full_history_var[full_history_var.total_distance > 0]
     grouped = list(full_history_var.groupby(['service_date', 'trip_id']))
     print len(grouped)
     result_list = []
@@ -458,7 +459,6 @@ def generate_original_segment_single_history(history, stop_sequence):
         next_record = history.iloc[i]
         while stop_sequence.index(prev_record.next_stop_id) >= stop_sequence.index(next_record.next_stop_id):
             i += 1
-            print "error of the order for the stop in the route"
             if i == len(history):
                 break
             next_record = history.iloc[i]
@@ -563,6 +563,7 @@ def improve_dataset():
     print "length of the total grouped list: ", len(grouped_list)
 
     result_list = []
+    # TODO fix the bug
     for i in xrange(20429, len(grouped_list)):
         if i % 1000 == 0:
             print i
