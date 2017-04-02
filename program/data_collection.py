@@ -632,7 +632,6 @@ def fix_bug_single_segment(segment_df):
         next_record = segment_df.iloc[i]
         if prev_record.segment_start = next_record.segment_start and prev_record.segment_end == next_record.segment_end:
             This is a duplicated record, continue to next row
-        if the prev_record.travel_duration > 600 (10 minutes), continue to next row
         save prev_record into result
 
     :param segment_df: dataframe of the single segment data
@@ -825,14 +824,14 @@ if __name__ == '__main__':
         weather_df = download_weather('20160101', '20160131')
         weather_df.to_csv('weather.csv')
         print "complete downloading weather information"
-        # export the route dist data
+    # export the route dist data
     if 'route_stop_dist.csv' not in file_list:
         print "export route_stop_dist.csv file"
         trips, stop_times, history = read_data()
         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
         route_stop_dist.to_csv('route_stop_dist.csv')
         print "complete exporting the route_stop_dist.csv file"
-        # export the train_history.csv file
+    # export the train_history.csv file
     if 'train_history.csv' not in file_list:
         print "export train_history.csv file"
         selected_trips = select_trip_list()
@@ -848,17 +847,17 @@ if __name__ == '__main__':
         segment_df = generate_original_segment(full_history, weather_df, stop_times)
         segment_df.to_csv('original_segment.csv')
         print "complete exporting the original_segement.csv file"
-    # if 'segment.csv' not in file_list:
-    #     print "export segment.csv file"
-    #     segment_df = improve_dataset()
-    #     segment_df.to_csv('segment.csv')
-    #     print "complete exporting the segment.csv file"
-    # if "final_segment.csv" not in file_list:
-    #     print "export final segment.csv file"
-    #     segment_df = pd.read_csv('segment.csv')
-    #     final_segment = fix_bug_segment(segment_df)
-    #     final_segment.to_csv('final_segment.csv')
-    #     print "complete exporting the final_segment.csv file"
+    if 'segment.csv' not in file_list:
+        print "export segment.csv file"
+        segment_df = improve_dataset()
+        segment_df.to_csv('segment.csv')
+        print "complete exporting the segment.csv file"
+    if "final_segment.csv" not in file_list:
+        print "export final segment.csv file"
+        segment_df = pd.read_csv('segment.csv')
+        final_segment = fix_bug_segment(segment_df)
+        final_segment.to_csv('final_segment.csv')
+        print "complete exporting the final_segment.csv file"
     # # export the api data
     # if "test_history.csv" not in file_list:
     #     print "export test_history.csv file"
