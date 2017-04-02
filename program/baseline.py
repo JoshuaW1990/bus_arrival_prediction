@@ -36,7 +36,7 @@ def preprocess_baseline1(segment_df):
         check whether the segment_start and the segment_end is the same (we need to fix this bug later when retrieving the segment data)
         Calculate the average travel duration
         save the record into the new dataframe
-    :param segment_df: 
+    :param segment_df:
     :return: the preprocessed segment dataframe
     """
     grouped_list = list(segment_df.groupby(['segment_start', 'segment_end']))
@@ -58,7 +58,7 @@ def preprocess_baseline1(segment_df):
 def preprocess_baseline2(segment_df, rush_hour):
     """
     Preprocess the segment data considering the weather and the rush hour
-    
+
     Algorithm:
     Preprocess segment_df to add a new column of rush hour
     split the dataframe with groupby(segment_start, segment_end, weather, rush_hour)
@@ -66,7 +66,7 @@ def preprocess_baseline2(segment_df, rush_hour):
     For name, item in grouped:
         calcualte the average travel duration
         save the record into the new dataframe
-    
+
     :param segment_df: dataframe after adding the rush hour from final_segment.csv file
     :param rush_hour: tuple to express which is the rush hour, example: ('17:00:00', '20:00:00')
     :return: dataframe for the baseline2
@@ -96,10 +96,11 @@ def preprocess_baseline2(segment_df, rush_hour):
 Predict the arrival time for each record in the api data
 """
 
+
 def calculate_time_from_stop(segment_df, dist_along_route, prev_record, next_record):
     """
     Calculate the time from stop within the tuple (prev_record, next_record)
-    
+
     Algorithm:
     if prev_record = next_record:
         the bus is parking at the stop, return 0
@@ -107,7 +108,7 @@ def calculate_time_from_stop(segment_df, dist_along_route, prev_record, next_rec
     Calculate the distance between the current location and the prev record
     Calcualte the ratio of these two distances
     Use the ratio to calcualte the time_from_stop
-    
+
     :param segment_df: dataframe for the preprocessed segment data
     :param dist_along_route: distance between the intial stop and the current location of the bus
     :param prev_record: single record of the route_stop_dist.csv file
@@ -128,11 +129,10 @@ def calculate_time_from_stop(segment_df, dist_along_route, prev_record, next_rec
     return time_from_stop
 
 
-
 def generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_stop_dist, trips):
     """
     Predict the estimated arrival time according to the api data
-    
+
     Algorithm:
     Build the empty dataframe
     for row in api_data:
@@ -154,7 +154,7 @@ def generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_s
             add the total travel duration with the time_from_stop(prev, next)
             save the result as the estimated time
         save the result into the dataframe
-    
+
     :param api_data: dataframe for the api_data.csv
     :param preprocessed_segment_data: dataframe for the preprocessed final_segment.csv file according to different baseline algorithm
     :param route_stop_dist: dataframe of the route_stop_dist.csv file
@@ -217,7 +217,7 @@ def generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_s
 def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
     """
     Calculate the actual arrival time from the dataset
-    
+
     Algorithm:
     Build the empty dataframe
     for row in segment_df:
@@ -260,11 +260,11 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
         arrival_time = time_from_stop + prev_time
         actual_arrival_time = arrival_time - time_of_day
         save the record
-    
-    :param full_history: 
-    :param segment_df: 
-    :param route_stop_dist: 
-    :return: 
+
+    :param full_history: dataframe for the historical data
+    :param segment_df: dataframe for the preprocessed average travel duration for the segmet data
+    :param route_stop_dist: dataframe for the route_stop_dist.csv file
+    :return: dataframe including both of the estimated arrival time and actual arrival time
     """
     result = pd.DataFrame(columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time', 'actual_arrival_time'])
     grouped_list = list(segment_df.groupby(['service_date', 'trip_id', 'stop_id']))
@@ -325,7 +325,6 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
             actual_arrival_time = actual_arrival_time.total_seconds()
             result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, str(time_of_day.time()), service_date, dist_along_route, stop_num_from_call, estimated_arrival_time, actual_arrival_time]
     return result
-
 
 
 #################################################################################################################
@@ -431,7 +430,7 @@ if __name__ == "__main__":
         estimated_result_list = []
         for current_date in range(20160118, 20160124):
             print current_date
-            weather = weather_df[weather_df.date == current_date].iloc[0]['result']
+            weather = weather_df[weather_df.date == current_date].iloc[0]['weather']
             current_result = generate_estimated_arrival_time(grouped_api_data.get_group((current_date, True)), grouped_segment_df.get_group((weather, True)), route_stop_dist, trips)
             estimated_result_list.append(current_result)
             current_result = generate_estimated_arrival_time(grouped_api_data.get_group((current_date, False)), grouped_segment_df.get_group((weather, False)), route_stop_dist, trips)
@@ -444,4 +443,3 @@ if __name__ == "__main__":
         baseline_result = generate_actual_arrival_time(sanity_test_full_history, segment_df, route_stop_dist)
         baseline_result.to_csv('sanity_baseline2result.csv')
         print "complete exporting the sanity check for baseline2 algorithm"
-

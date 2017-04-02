@@ -35,7 +35,7 @@ def draw_scatter_graph(filename):
         fig.savefig(filename)
     # split the dataset according to the rush hour and plot the scatter
     weather_df = pd.read_csv('../program/weather.csv')
-    weather = output['service_date'].apply(lambda x: weather_df[weather_df.date == x].iloc[0].result)
+    weather = output['service_date'].apply(lambda x: weather_df[weather_df.date == x].iloc[0].weather)
     output['weather'] = weather
     grouped_output = output.groupby(['weather'])
     weather_dict = {}

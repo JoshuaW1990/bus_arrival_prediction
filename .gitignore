@@ -3,3 +3,4 @@ data/*
 .idea/
 .vscode/
 data/
+.ropeproject/

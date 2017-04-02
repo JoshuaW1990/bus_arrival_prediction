@@ -786,7 +786,7 @@ def generate_single_api(current_time, route_stop_dist, route_id, single_history,
     dist_along_route = calculate_arrival_distance(time_of_day, prev_distance, next_distance, prev_timestamp, next_timestamp)
     # Generate the return list
     # trip_id    vehicle_id    route_id    stop_id    time_of_day    date    dist_along_route
-    result = [single_trip, prev_record['vehicle_id'], route_id, stop_id, current_time, prev_record['service_date'], dist_along_route]
+    result = [single_trip, prev_record['vehicle_id'], route_id, stop_id, str(time_of_day), prev_record['service_date'], dist_along_route]
     return result
 
 
