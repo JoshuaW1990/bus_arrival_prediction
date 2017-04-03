@@ -474,7 +474,7 @@ if __name__ == "__main__":
             segment_df.to_csv('estimated_segment_baseline1.csv')
         else:
             segment_df = pd.read_csv('estimated_segment_baseline1.csv')
-        full_history = pd.read_csv('train_history.csv')
+        full_history = pd.read_csv('test_history.csv')
         baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
         baseline_result.to_csv('baseline1_result.csv')
         print "complete exporting the result for baseline1"
@@ -509,7 +509,7 @@ if __name__ == "__main__":
             segment_df = pd.read_csv('estimated_segment_baseline2.csv')
 
         # actual arrival time
-        full_history = pd.read_csv('train_history.csv')
+        full_history = pd.read_csv('test_history.csv')
         baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
         baseline_result.to_csv('baseline2_result.csv')
         print "complete exporting the result baseline2"
