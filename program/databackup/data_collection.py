@@ -1,24 +1,29 @@
 """
-This datacollection try to reuse the method in different places such that all the process are similar, and we can avoid the error
+Data collection process file. Try to improve the efficiency.
+Exported files: `weather.csv`, `segment.csv`, `api_data.csv` and `route_stop_dist.csv`
+Input files: gtfs file, historical data
 """
 
-# import module
-
+# import modules
 import pandas as pd
 import os
+import requests
+import csv
+import random
 from datetime import datetime, timedelta
 from dateutil.rrule import rrule, DAILY
-import requests
-import random
 
+# set the path
 path = '../'
+
+print "working path"
+print os.getcwd()
+print os.listdir(path)
 
 
 #################################################################################################################
 #                                weather.csv                                                                    #
 #################################################################################################################
-
-
 def get_precip(gooddate):
     """
     Download the weather information for a specific date
@@ -32,15 +37,8 @@ def get_precip(gooddate):
     data = requests.get(url).json()
     result = None
     for summary in data['history']['dailysummary']:
-        rain = summary['rain']
-        snow = summary['snow']
-        if snow == '1':
-            weather = '2'
-        elif rain == '1':
-            weather = '1'
-        else:
-            weather = '0'
-        result = [gooddate, rain, snow, weather]
+        result = [gooddate, summary['date']['year'], summary['date']['mon'], summary['date']['mday'], summary['fog'],
+                  summary['rain'], summary['snow']]
     return result
 
 
@@ -50,21 +48,25 @@ def download_weather(date_start, date_end):
     :param date_start: start date, string, ex: '20160101'
     :param date_end: similar to date_start
     :return: list of the table record
-    weather = 2: snow
-    weather = 1: rain
-    weather = 0: sunny
     """
 
     a = datetime.strptime(date_start, '%Y%m%d')
     b = datetime.strptime(date_end, '%Y%m%d')
 
-    result = pd.DataFrame(columns=['date', 'rain', 'snow', 'weather'])
+    result = [['date', 'year', 'month', 'day', 'fog', 'rain', 'snow']]
     for dt in rrule(DAILY, dtstart=a, until=b):
         current_data = get_precip(dt.strftime("%Y%m%d"))
         if current_data is None:
             continue
         else:
-            result.loc[len(result)] = current_data
+            result.append(current_data)
+
+    # export to the csv file
+    with open('weather.csv', 'wb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',')
+        for item in result:
+            spamwriter.writerow(item)
+
     return result
 
 
@@ -118,7 +120,7 @@ def read_data(route_num=None, direction_id=0):
             else:
                 print "historical file name: ", single_file
                 history_list.append(tmp_history)
-    result_history = pd.concat(history_list, ignore_index=True)
+    result_history = pd.concat(history_list)
     print "complete reading data"
     return result_trips, result_stop_times, result_history
 
@@ -183,80 +185,11 @@ def calculate_stop_distance(trips, stop_times, history, direction_id=0):
 
 
 #################################################################################################################
-#                   helper function for api data, segment data, and other calcualtion                           #
+#                                        segment.csv                                                            #
 #################################################################################################################
 """
-Helper functions for generating api data, segment data and even the arrival time
-
-calculate_arrival_time are used in:
-generate_segment_data
-generate_actual_arrival_time
-
-
-calculate_arrival_distance are used in:
-generate_api_data
+Generate the orgininal segment data including the travel duration. Improve the segment data by adding back the skipped
 """
-
-
-def calculate_arrival_time(stop_dist, prev_dist, next_dist, prev_timestamp, next_timestamp):
-    """
-     Calculate the arrival time according to the given tuple (prev_dist, next_dist), the current location, the timestamp of the prev location, and the timestamp of the next location
-
-    Algorithm:
-    distance_prev_next = next_dist - prev_dist
-    distance_prev_stop = stop_distance - prev_dist
-    ratio = distance_prev_stop / distance_prev_next
-    duration_prev_next = next_timestamp - prev_timestamp
-    duration_prev_stop = duration_prev_next * ratio
-    stop_timestamp = prev_timestamp + duration_prev_stop
-    return the stop_timestamp
-
-    :param stop_dist: the distance of the target stop between the prev and next tuple
-    :param prev_dist: the distance of the location of the bus at the previous record
-    :param next_dist: the distance of the location of the bus at the next record
-    :param prev_timestamp: the timestamp of the bus at the previous record
-    :param next_timestamp: the timestamp of the bus at the next record
-    :return result: the timestamp of the bus arrival the target stop
-    """
-    distance_prev_next = next_dist - prev_dist
-    distance_prev_stop = stop_dist - prev_dist
-    ratio = float(distance_prev_stop) / float(distance_prev_next)
-    duration_prev_next = next_timestamp - prev_timestamp
-    duration_prev_stop = ratio * duration_prev_next.total_seconds()
-    duration_prev_stop = timedelta(0, duration_prev_stop)
-    stop_timestamp = prev_timestamp + duration_prev_stop
-    return stop_timestamp
-
-
-def calculate_arrival_distance(time_of_day, prev_dist, next_dist, prev_timestamp, next_timestamp):
-    """
-    calculate arrival distance according to the given input: time_of_day, prev_dist, next_dist, prev_timestamp, next_timestamp
-
-    Algorithm:
-    distance_prev_next = next_dist - prev_dist
-    duration_prev_next = next_timestamp - prev_timestamp
-    duration_prev_time = time_of_day - prev_timestamp
-    ratio = duration_prev_time / duration_prev_next
-    distance_prev_time = distance_prev_next * ratio
-    dist_along_route = distance_prev_time + prev_dist
-    return the dist_along_route
-
-    :param time_of_day: the given time for calculating the dist_along_route
-    :param prev_dist: the distance of the location of the bus for the previous record in historical data
-    :param next_dist: the distance of the location of the bus for the next record in historical data
-    :param prev_timestamp: the timestamp of the bus for the previous record in historical data
-    :param next_timestamp: the timestamp of the bus for the next record in historical data
-    :return result: dist_along_route for the bus at the given time_of_day
-    """
-    duration_prev_next = next_timestamp - prev_timestamp
-    duration_prev_time = time_of_day - prev_timestamp
-    duration_prev_next = duration_prev_next.total_seconds()
-    duration_prev_time = duration_prev_time.total_seconds()
-    ratio = duration_prev_time / duration_prev_next
-    distance_prev_next = next_dist - prev_dist
-    distance_prev_time = distance_prev_next * ratio
-    dist_along_route = prev_dist + distance_prev_time
-    return dist_along_route
 
 
 def extract_time(time):
@@ -276,16 +209,6 @@ def calculate_time_span(time1, time2):
     """
     timespan = extract_time(time2) - extract_time(time1)
     return timespan.total_seconds()
-
-
-#################################################################################################################
-#                                    segment.csv                                                                #
-#################################################################################################################
-
-
-"""
-generate the segment data
-"""
 
 
 def select_trip_list(num_route=None, direction_id=0):
@@ -331,16 +254,37 @@ def filter_history_data(date_start, date_end, selected_trips_var):
     for filename in file_list_var:
         if not filename.endswith('.csv'):
             continue
-        if str(date_start) <= str(filename[9:17]) <= str(date_end):
-            print filename
-            ptr_history = pd.read_csv(path + 'data/history/' + filename)
-            tmp_history = ptr_history[
-                (ptr_history.trip_id.isin(selected_trips_var)) & (ptr_history.dist_along_route != '\N') & (
-                    ptr_history.dist_along_route != 0) & (ptr_history.progress == 0) & (
-                ptr_history.block_assigned == 1) & (ptr_history.dist_along_route > 1)]
-            history_list.append(tmp_history)
-    result = pd.concat(history_list, ignore_index=True)
+        if filename[9:17] < str(date_start) or filename[9:17] > str(date_end):
+            continue
+        print filename
+        ptr_history = pd.read_csv(path + 'data/history/' + filename)
+        tmp_history = ptr_history[
+            (ptr_history.trip_id.isin(selected_trips_var)) & (ptr_history.dist_along_route != '\N') & (
+                ptr_history.dist_along_route != 0) & (ptr_history.progress == 0)]
+        history_list.append(tmp_history)
+    result = pd.concat(history_list)
     return result
+
+
+def add_weather_info(weather, date_var):
+    """
+    add the weather information from the file: weather.csv
+    The weather are expressed as below:
+    0: sunny
+    1: rainy
+    2: snowy
+    :param weather: the dataframe for weather.csv file
+    :param date_var: the date for querying the weather
+    :return: return the weather value today.
+    """
+    ptr_weather = weather[weather.date == date_var]
+    if ptr_weather.iloc[0].snow == 1:
+        weather_today = 2
+    elif ptr_weather.iloc[0].rain == 1:
+        weather_today = 1
+    else:
+        weather_today = 0
+    return weather_today
 
 
 def generate_original_segment(full_history_var, weather, stop_times_var):
@@ -360,13 +304,12 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
     format:
     segment_start, segment_end, timestamp, travel_duration, weather, service date, day_of_week, trip_id, vehicle_id
     """
-    full_history_var = full_history_var[full_history_var.total_distance > 0]
     grouped = list(full_history_var.groupby(['service_date', 'trip_id']))
     print len(grouped)
     result_list = []
     for index in range(len(grouped)):
         name, single_history = grouped[index]
-        if index % 1000 == 0:
+        if index % 150 == 0:
             print index
         service_date, trip_id = name
         if service_date <= 20160103:
@@ -384,7 +327,7 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
         current_segment_df = generate_original_segment_single_history(majority_history, stop_sequence)
         if current_segment_df is None:
             continue
-        current_weather = weather[weather.date == service_date].iloc[0]['weather']
+        current_weather = add_weather_info(weather, service_date)
         current_segment_df['weather'] = current_weather
         day_of_week = datetime.strptime(str(service_date), '%Y%m%d').weekday()
         current_segment_df['service_date'] = service_date
@@ -393,7 +336,7 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
         current_segment_df['vehicle_id'] = majority_vehicle
         result_list.append(current_segment_df)
     if result_list != []:
-        result = pd.concat(result_list, ignore_index=True)
+        result = pd.concat(result_list)
     else:
         return None
     return result
@@ -405,21 +348,21 @@ def generate_original_segment_single_history(history, stop_sequence):
     Algorithm:
     Filter the historical data with the stop sequence here
     arrival_time_list = []
-    i = 0
-    while i < len(history):
+    for i = 1, len(history) - 1:
         use prev and the next to mark the record:
             prev = history[i - 1]
             next = history[i]
-        check whether the prev stop is the same as the next stop:
-            if yes, skip this row and continue to next row
-        prev_distance = prev.dist_along_route - prev.dist_from_stop
-        next_distance = next.dist_along_route - next.dist_from_stop
-        if prev_distance == next_distance:
-            continue to next row
-        elif prev.dist_from_stop = 0:
-            current_arrival_time = prev.timestamp
-        else:
-            current_arrival_duration = calcualte_arrival_time(prev.dist_along_route, prev_distance, next_distance, prev_timestamp, next_timestamp)
+        calculate the distance for prev and next respectively:
+            prev_distance = prev.dist_along_route - prev.dist_from_stop
+            next_distance = next.dist_along_route - next.dist_from_stop
+        if prev_distance == next_distance or prev_distance = 0, continue to next row
+        distance_ratio = prev.dist_from_stop / (next_distance - prev_distance)
+        calcualte the time duration between the two spot:
+            prev_time = datetime.strptime(prev.timestamp, '%Y-%m-%dT%H:%M:%SZ')
+            next_time = ...
+            travel_duration = next_time - prev_time
+        current_arrival_duration = travel_duration * distance_ratio
+        current_arrival_time = current_arrival_duration + prev_time
         arrival_time_list.append((prev.next_stop_id, current_arrival_time))
     result = pd.Dataframe
     for i in range(1, len(arrival_time_list)):
@@ -436,49 +379,41 @@ def generate_original_segment_single_history(history, stop_sequence):
     format:
     segment_start, segment_end, timestamp, travel_duration
     """
-    single_history = history[history.next_stop_id.isin(stop_sequence)]
-    if len(single_history) < 3:
+    history = history[history.next_stop_id.isin(stop_sequence)]
+    if len(history) < 3:
         return None
     arrival_time_list = []
-    grouped_list = list(single_history.groupby('next_stop_id'))
-    if len(grouped_list) < 3:
-        return None
-    history = pd.DataFrame(columns=single_history.columns)
-    for i in xrange(len(grouped_list)):
-        history.loc[len(history)] = grouped_list[i][1].iloc[-1]
-    history.sort_values(by='timestamp', inplace=True)
-    if history.iloc[0]['total_distance'] < 1:
-        prev_record = history.iloc[1]
-        i = 2
-    else:
-        prev_record = history.iloc[0]
-        i = 1
+    i = 1
     while i < len(history):
+        prev_record = history.iloc[i - 1]
         next_record = history.iloc[i]
-        while stop_sequence.index(prev_record.next_stop_id) >= stop_sequence.index(next_record.next_stop_id):
+        while i < len(history) and stop_sequence.index(prev_record.next_stop_id) >= stop_sequence.index(next_record.next_stop_id):
             i += 1
             if i == len(history):
                 break
+            if stop_sequence.index(prev_record.next_stop_id) == stop_sequence.index(next_record.next_stop_id):
+                prev_record = next_record
             next_record = history.iloc[i]
         if i == len(history):
             break
-        prev_distance = float(prev_record.total_distance)
-        next_distance = float(next_record.total_distance)
-        prev_timestamp = datetime.strptime(prev_record.timestamp, '%Y-%m-%dT%H:%M:%SZ')
-        next_timestamp = datetime.strptime(next_record.timestamp, '%Y-%m-%dT%H:%M:%SZ')
-        if prev_distance == next_distance:
-            # the bus didn't move yet
+        # calculate the distance for prev and next respectively
+        prev_distance = float(prev_record.dist_along_route) - float(prev_record.dist_from_stop)
+        next_distance = float(next_record.dist_along_route) - float(next_record.dist_from_stop)
+        # todo check the prev_distance
+        if prev_distance == next_distance or prev_distance == 0:
             i += 1
             continue
-        if prev_record.dist_from_stop == 0:
-            # if prev.dist_from_stop is 0, the bus is 0, then save result into timestamp
-            current_arrival_time = prev_timestamp
         else:
-            stop_dist = prev_record.dist_along_route
-            current_arrival_time = calculate_arrival_time(stop_dist, prev_distance, next_distance, prev_timestamp,
-                                                          next_timestamp)
+            distance_ratio = float(prev_record.dist_from_stop) / (next_distance - prev_distance)
+        # calcualte the time duration between the two spot
+        prev_time = datetime.strptime(prev_record.timestamp, '%Y-%m-%dT%H:%M:%SZ')
+        next_time = datetime.strptime(next_record.timestamp, '%Y-%m-%dT%H:%M:%SZ')
+        travel_duration = next_time - prev_time
+        travel_duration = travel_duration.total_seconds()
+        # add it into the arrival time list
+        current_arrival_duration = travel_duration * distance_ratio
+        current_arrival_time = timedelta(0, current_arrival_duration) + prev_time
         arrival_time_list.append((prev_record.next_stop_id, current_arrival_time))
-        prev_record = next_record
         i += 1
     result = pd.DataFrame(columns=['segment_start', 'segment_end', 'timestamp', 'travel_duration'])
     for i in range(1, len(arrival_time_list)):
@@ -488,7 +423,7 @@ def generate_original_segment_single_history(history, stop_sequence):
         timestamp = prev_record[1]
         travel_duration = next_record[1] - prev_record[1]
         travel_duration = travel_duration.total_seconds()
-        result.loc[len(result)] = [segment_start, segment_end, str(timestamp), travel_duration]
+        result.loc[len(result)] = [segment_start, segment_end, timestamp, travel_duration]
     return result
 
 
@@ -524,9 +459,11 @@ def improve_dataset_unit(segment_df, stop_sequence):
         start_index = stop_sequence.index(segment_start)
         end_index = stop_sequence.index(segment_end)
         count = end_index - start_index
-        if count <= 0:
+        if count < 0:
             print "error"
             continue
+        if count == 1:
+            result.loc[len(result)] = [segment_start, segment_end, timestamp, travel_duration]
         average_travel_duration = float(travel_duration) / float(count)
         for j in range(start_index, end_index):
             current_segment_start = stop_sequence[j]
@@ -575,14 +512,10 @@ def improve_dataset():
     if result_list == []:
         result = None
     else:
-        result = pd.concat(result_list, ignore_index=True)
+        result = pd.concat(result_list)
     return result
 
 
-"""
-fix_bug_segment functio is not necessary
-"""
-# TODO it is not necessary
 def fix_bug_segment(segment_df):
     """
     Fix the bugs for the segment after improvement:
@@ -606,12 +539,11 @@ def fix_bug_segment(segment_df):
         if i % 1000 == 0:
             print i
         name, item = grouped_list[i]
-        if len(item) < 2:
-            result_list.append(item)
-        else:
-            current_segment = fix_bug_single_segment(item)
-            result_list.append(current_segment)
-    result = pd.concat(result_list, ignore_index=True)
+        if len(item) < 3:
+            continue
+        current_segment = fix_bug_single_segment(item)
+        result_list.append(current_segment)
+    result = pd.concat(result_list)
     columns = []
     for item in result.columns:
         if item.startswith('Unnamed'):
@@ -632,6 +564,7 @@ def fix_bug_single_segment(segment_df):
         next_record = segment_df.iloc[i]
         if prev_record.segment_start = next_record.segment_start and prev_record.segment_end == next_record.segment_end:
             This is a duplicated record, continue to next row
+        if the prev_record.travel_duration > 600 (10 minutes), continue to next row
         save prev_record into result
 
     :param segment_df: dataframe of the single segment data
@@ -642,8 +575,6 @@ def fix_bug_single_segment(segment_df):
         prev_record = segment_df.iloc[i - 1]
         next_record = segment_df.iloc[i]
         # check whether the row is duplicated
-        # TODO check whether there is repeated the segment in a single segment dataframe exists
-        # If there is no duplicated segments exists, final_segment.csv file is not necessary
         if prev_record.segment_start == next_record.segment_start and prev_record.segment_end == next_record.segment_end:
             continue
         result.loc[len(result)] = prev_record
@@ -653,22 +584,19 @@ def fix_bug_single_segment(segment_df):
             segment_df.iloc[-1].segment_end:
         result.loc[len(result)] = segment_df.iloc[-1]
     mean_travel_duration = result['travel_duration'].mean()
-    # some of the ditance of the segment pair is large, so it is possible that some of the segment pair is larger than 600 hundred seconds
-    # result['travel_duration'] = result['travel_duration'].apply(lambda x: mean_travel_duration if x > 600 else x)
+    result['travel_duration'] = result['travel_duration'].apply(lambda x: mean_travel_duration if x > 600 else x)
     return result
 
 
 #################################################################################################################
-#                                    api data section                                                              #
+#                                    API data                                                                   #
 #################################################################################################################
-
-
 """
 Generate the api data from the GTFS data and the historical data
 """
 
 
-def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history):
+def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history=None):
     """
     Generate the api data for the test_route_set and given time list
     :param time_list: the time list for testing, ['12:00:00', '12:05:00', ...]
@@ -708,55 +636,38 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
         for i in range(stop_num):
             stop_set.add(stop_sequence[random.randint(2, len(stop_sequence) - 2)])
         route_stop_dict[route] = stop_set
-    history = full_history[
-        (full_history.trip_id.isin(trip_route_dict.keys())) & (full_history.service_date.isin(date_list))]
+    if full_history is None:
+        full_history = pd.read_csv('full_history.csv')
+    history = full_history[full_history.trip_id.isin(trip_route_dict.keys())]
     history_grouped = history.groupby(['service_date', 'trip_id'])
-    result = pd.DataFrame(
-        columns=['trip_id', 'vehicle_id', 'route_id', 'stop_id', 'time_of_day', 'date', 'dist_along_route'])
+    result = pd.DataFrame(columns=['trip_id', 'vehicle_id', 'route_id', 'stop_id', 'time_of_day', 'date', 'dist_along_route'])
     print_dict = dict.fromkeys(date_list, True)
     for name, single_history in list(history_grouped):
-        service_date, trip_id = name
-        if service_date not in date_list:
+        date, single_trip = name
+        if date not in date_list:
             continue
-        if print_dict[service_date]:
-            print service_date
-            print_dict[service_date] = False
-        route_id = trip_route_dict[trip_id]
+        if print_dict[date]:
+            print date
+            print_dict[date] = False
+        route_id = trip_route_dict[single_trip]
         stop_set = [str(int(item)) for item in route_stop_dict[route_id]]
-        # stop_sequence = [str(int(item)) for item in list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)]
-        stop_sequence = list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)
-        # filtering the history data: remove the abnormal value
-        current_history = single_history[(single_history.next_stop_id.isin(stop_sequence)) & (single_history.dist_along_route > 0)]
-        if len(current_history) < 3:
+        stop_sequence = [str(int(item)) for item in list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)]
+        tmp_history = single_history[(single_history.next_stop_id.isin(stop_sequence)) & (single_history.dist_along_route > '0')]
+        if len(tmp_history) < 3:
             continue
-        tmp_history = pd.DataFrame(columns=current_history.columns)
-        i = 1
-        prev_record = current_history.iloc[0]
-        while i < len(current_history):
-            next_record = current_history.iloc[i]
-            prev_distance = float(prev_record.total_distance)
-            next_distance = float(next_record.total_distance)
-            while prev_distance >= next_distance:
-                i += 1
-                if i == len(current_history):
-                    break
-                next_record = current_history.iloc[i]
-                next_distance = float(next_record.total_distance)
-            tmp_history.loc[len(tmp_history)] = prev_record
-            prev_record = next_record
-            i += 1
-        if float(prev_record.total_distance) > float(tmp_history.iloc[-1].total_distance):
-            tmp_history.loc[len(tmp_history)] = prev_record
-        single_history = tmp_history
-        if len(single_history) < 2:
-            continue
+        else:
+            single_history = pd.DataFrame(columns=tmp_history.columns)
+            for i in range(1, len(tmp_history)):
+                if float(tmp_history.iloc[i - 1].dist_along_route) < float(tmp_history.iloc[i].dist_along_route):
+                    single_history.loc[len(single_history)] = tmp_history.iloc[i - 1]
+            if len(single_history) < 3:
+                continue
+            if tmp_history.iloc[-1].dist_along_route >= single_history.iloc[-1].dist_along_route:
+                single_history.loc[len(single_history)] = tmp_history.iloc[-1]
         for target_stop in stop_set:
-            target_index = stop_sequence.index(float(target_stop))
+            target_index = stop_sequence.index(target_stop)
             for current_time in time_list:
-                # If the bus has not started from the initial stop yet, continue to next time point in the time list
-                if single_history.iloc[0].timestamp[11:19] > current_time:
-                    continue
-                # check whether the bus has passed the target stop, if yes, break and continue to the next target_stop
+                #  check whether the bus has passed the target stop, if yes, break and continue to the next target_stop
                 index = 1
                 while index < len(single_history) and single_history.iloc[index].timestamp[11:19] <= current_time:
                     index += 1
@@ -764,12 +675,14 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
                     break
                 index -= 1
                 tmp_stop = str(single_history.iloc[index].next_stop_id)
-                tmp_index = stop_sequence.index(float(tmp_stop))
+                tmp_index = stop_sequence.index(tmp_stop)
                 if tmp_index > target_index:
                     break
+                # If the bus has not started from the initial stop yet, continue to next time point in the time list
+                if single_history.iloc[0].timestamp[11:19] > current_time:
+                    continue
                 # If the bus does not pass the target stop, save the remained stops into the stop sequence and calculate the result
-                current_list = generate_single_api(current_time, route_stop_dist, route_id, single_history[index:],
-                                                   target_stop, target_index)
+                current_list = generate_single_api(current_time, route_stop_dist, route_id, single_history[index:], target_stop, target_index)
                 if current_list is not None:
                     result.loc[len(result)] = current_list
     return result
@@ -794,33 +707,33 @@ def generate_single_api(current_time, route_stop_dist, route_id, single_history,
     Count the number of the remained stops
     """
     single_trip = single_history.iloc[0].trip_id
-    prev_record = single_history.iloc[0]
-    next_record = single_history.iloc[1]
+    prev = single_history.iloc[0]
+    next = single_history.iloc[1]
+    # If the time duration between the prev and the next time point is larger than 5 minutes, ignore it for precision
+    if calculate_time_span(prev['timestamp'], next['timestamp']) > 300:
+        return None
     # calculate the dist_along_route for current
-    prev_distance = float(prev_record.total_distance)
-    next_distance = float(next_record.total_distance)
-    prev_timestamp = datetime.strptime(prev_record['timestamp'], '%Y-%m-%dT%H:%M:%SZ')
-    next_timestamp = datetime.strptime(next_record['timestamp'], '%Y-%m-%dT%H:%M:%SZ')
-    # determine the current time
-    if prev_record['timestamp'][11:19] <= current_time <= next_record['timestamp'][11:19]:
-        time_of_day = prev_record['timestamp'][:11] + current_time + 'Z'
-    else:
-        # case: this trip is crossing between two days
-        if current_time > next_record['timestamp'][11:19]:
-            time_of_day = prev_record['timestamp'][11:19] + current_time + 'Z'
-        else:
-            time_of_day = next_record['timestamp'][11:19] + current_time + 'Z'
-    time_of_day = datetime.strptime(time_of_day, '%Y-%m-%dT%H:%M:%SZ')
-    dist_along_route = calculate_arrival_distance(time_of_day, prev_distance, next_distance, prev_timestamp, next_timestamp)
+    distance_prev_next = (float(next['dist_along_route']) - float(next['dist_from_stop'])) - (float(prev['dist_along_route']) - float(prev['dist_from_stop']))
+    time_duration_prev_next = calculate_time_span(prev['timestamp'], next['timestamp'])
+    time_duration_prev_current = datetime.strptime(current_time, '%H:%M:%S') - extract_time(prev['timestamp'])
+    time_duration_prev_current = time_duration_prev_current.total_seconds()
+    ratio = float(time_duration_prev_current) / float(time_duration_prev_next)
+    distance_prev_current = float(distance_prev_next) * ratio
+    dist_along_route = (float(prev['dist_along_route']) - float(prev['dist_from_stop'])) + distance_prev_current
     # Generate the return list
     # trip_id    vehicle_id    route_id    stop_id    time_of_day    date    dist_along_route
-    result = [single_trip, prev_record['vehicle_id'], route_id, stop_id, str(time_of_day), prev_record['service_date'], dist_along_route]
+    result = [single_trip, prev['vehicle_id'], route_id, stop_id, current_time, prev['service_date'], dist_along_route]
     return result
 
 
 #################################################################################################################
 #                                    debug section                                                              #
 #################################################################################################################
+# print "export final segment.csv file"
+# segment_df = pd.read_csv('segment.csv')
+# final_segment = fix_bug_segment(segment_df)
+# final_segment.to_csv('final_segment.csv')
+# print "complete exporting the final_segment.csv file"
 
 
 #################################################################################################################
@@ -833,8 +746,7 @@ if __name__ == '__main__':
     # download weather information
     if 'weather.csv' not in file_list:
         print "download weather.csv file"
-        weather_df = download_weather('20160101', '20160131')
-        weather_df.to_csv('weather.csv')
+        download_weather('20160101', '20160131')
         print "complete downloading weather information"
     # export the route dist data
     if 'route_stop_dist.csv' not in file_list:
@@ -843,18 +755,12 @@ if __name__ == '__main__':
         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
         route_stop_dist.to_csv('route_stop_dist.csv')
         print "complete exporting the route_stop_dist.csv file"
-    # export the train_history.csv file
-    if 'train_history.csv' not in file_list:
-        print "export train_history.csv file"
-        selected_trips = select_trip_list()
-        full_history = filter_history_data(20160104, 20160123, selected_trips)
-        full_history.to_csv('train_history.csv')
-        print "complete exporting train_history.csv file"
     # export the segment data
     if 'original_segment.csv' not in file_list:
         print "export original_segment.csv file"
+        selected_trips = select_trip_list()
         weather_df = pd.read_csv('weather.csv')
-        full_history = pd.read_csv('train_history.csv')
+        full_history = filter_history_data(20160104, 20160123, selected_trips)
         stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
         segment_df = generate_original_segment(full_history, weather_df, stop_times)
         segment_df.to_csv('original_segment.csv')
@@ -864,26 +770,24 @@ if __name__ == '__main__':
         segment_df = improve_dataset()
         segment_df.to_csv('segment.csv')
         print "complete exporting the segment.csv file"
-    # if "final_segment.csv" not in file_list:
-    #     print "export final segment.csv file"
-    #     segment_df = pd.read_csv('segment.csv')
-    #     final_segment = fix_bug_segment(segment_df)
-    #     # final_segment.to_csv('final_segment.csv')
-    #     print "complete exporting the final_segment.csv file"
+    if "final_segment.csv" not in file_list:
+        print "export final segment.csv file"
+        segment_df = pd.read_csv('segment.csv')
+        final_segment = fix_bug_segment(segment_df)
+        final_segment.to_csv('final_segment.csv')
+        print "complete exporting the final_segment.csv file"
     # export the api data
-    if "test_history.csv" not in file_list:
-        print "export test_history.csv file"
-        selected_trips = select_trip_list()
-        full_history = filter_history_data(20160125, 20160130, selected_trips)
-        full_history.to_csv('test_history.csv')
-        print "complete exporting test_history.csv file"
-    if 'api_data.csv' not in file_list:
+    if 'api_data1.csv' not in file_list:
         print "export api_data.csv file"
-        date_list = range(20160125, 20160130)
+        date_list = range(20160118, 20160124)
         route_stop_dist = pd.read_csv('route_stop_dist.csv')
         stop_num = 4
         route_list = list(set(route_stop_dist.route_id))
-        full_history = pd.read_csv('test_history.csv')
+        history_list = []
+        for current_date in date_list:
+            filename = 'bus_time_' + str(current_date) + '.csv'
+            history_list.append(pd.read_csv(path + 'data/history/' + filename))
+        full_history = pd.concat(history_list)
         api_data_list = []
         time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
         current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
@@ -892,7 +796,6 @@ if __name__ == '__main__':
         current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
         api_data_list.append(current_api_data)
         api_data = pd.concat(api_data_list)
-        api_data.to_csv('api_data.csv')
+        api_data.to_csv('api_data1.csv')
         print "complete exporting the api_data.csv file"
     print "complete data collection"
-
