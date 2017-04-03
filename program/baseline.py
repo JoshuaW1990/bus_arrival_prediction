@@ -9,6 +9,84 @@ import os
 from datetime import timedelta, datetime
 
 
+path = '../'
+
+#################################################################################################################
+#                                data preproces                                                                 #
+#################################################################################################################
+"""
+Calculate the average travel duration for the segment data
+1. simplest baseline
+2. simple baseline
+3. advanced baseline
+Use the groupby function for the segment dataframe
+"""
+
+
+def preprocess_baseline1(segment_df):
+    """
+    preprocession for the simplest baseline: not considering the weather and the time
+    Algorithm:
+    Read the database
+    Group the dataframe according to the segment start and the segment end
+    For each item in the grouped list:
+        obtain the name and the sub dataframe
+        check whether the segment_start and the segment_end is the same (we need to fix this bug later when retrieving the segment data)
+        Calculate the average travel duration
+        save the record into the new dataframe
+    :param segment_df:
+    :return: the preprocessed segment dataframe
+    """
+    grouped_list = list(segment_df.groupby(['segment_start', 'segment_end']))
+    print "length of the grouped list: ", len(grouped_list)
+    result = pd.DataFrame(columns=['segment_start', 'segment_end', 'travel_duration'])
+    for i in xrange(len(grouped_list)):
+        if i % 100 == 0:
+            print i
+        name, item = grouped_list[i]
+        segment_start, segment_end = name
+        if segment_start == segment_end:
+            continue
+        travel_duration_list = list(item['travel_duration'])
+        average_travel_duration = sum(travel_duration_list) / float(len(travel_duration_list))
+        result.loc[len(result)] = [segment_start, segment_end, average_travel_duration]
+    return result
+
+
+def preprocess_baseline2(segment_df, rush_hour):
+    """
+    Preprocess the segment data considering the weather and the rush hour
+
+    Algorithm:
+    Preprocess segment_df to add a new column of rush hour
+    split the dataframe with groupby(segment_start, segment_end, weather, rush_hour)
+    Define the new dataframe
+    For name, item in grouped:
+        calcualte the average travel duration
+        save the record into the new dataframe
+
+    :param segment_df: dataframe after adding the rush hour from final_segment.csv file
+    :param rush_hour: tuple to express which is the rush hour, example: ('17:00:00', '20:00:00')
+    :return: dataframe for the baseline2
+    """
+    # Preprocess segment_df to add a new column of rush hour
+    rush_hour_column = segment_df['timestamp'].apply(lambda x: x[11:19] < rush_hour[1] and x[11:19] > rush_hour[0])
+    new_segment_df = segment_df
+    new_segment_df['rush_hour'] = rush_hour_column
+    grouped_list = list(new_segment_df.groupby(['segment_start', 'segment_end', 'weather', 'rush_hour']))
+    print "length of the grouped_list is: ", len(grouped_list)
+    result = pd.DataFrame(columns=['segment_start', 'segment_end', 'travel_duration', 'weather', 'rush_hour'])
+    for i in xrange(len(grouped_list)):
+        if i % 1000 == 0:
+            print i
+        name, item = grouped_list[i]
+        segment_start, segment_end, weather, rush_hour_var = name
+        travel_duration_list = list(item['travel_duration'])
+        average_travel_duration = sum(travel_duration_list) / float(len(travel_duration_list))
+        result.loc[len(result)] = [segment_start, segment_end, average_travel_duration, weather, rush_hour_var]
+    return result
+
+
 #################################################################################################################
 #                   helper function for api data, segment data, and other calcualtion                           #
 #################################################################################################################
@@ -356,7 +434,6 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
 #                                    main function                                                              #
 #################################################################################################################
 
-path = '../'
 file_list = os.listdir('./')
 
 if __name__ == "__main__":
@@ -374,7 +451,7 @@ if __name__ == "__main__":
     #     new_segment_df = preprocess_baseline2(segment_df, rush_hour)
     #     new_segment_df.to_csv('segment_baseline2.csv')
     #     print "complete exporting the segment data for baseline2"
-    if "new_baseline1result.csv" not in file_list:
+    if "baseline1_result.csv" not in file_list:
         print "export the segment data for baseline1result"
         # api_data = pd.read_csv('api_data.csv')
         # preprocessed_segment_data = pd.read_csv('segment_baseline1.csv')
@@ -385,7 +462,7 @@ if __name__ == "__main__":
         full_history = pd.read_csv('test_full_history.csv')
         segment_df = pd.read_csv('estimated_segment.csv')
         baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
-        baseline_result.to_csv('new_baseline1result.csv')
+        baseline_result.to_csv('baseline1_result.csv')
         print "complete exporting the segment data for baseline1result"
     # if "sanity_test_full_history.csv" not in file_list:
     #     print "export the full history data for the sanity check"

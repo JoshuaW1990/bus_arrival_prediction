@@ -340,8 +340,6 @@ def filter_history_data(date_start, date_end, selected_trips_var):
                 ptr_history.block_assigned == 1) & (ptr_history.dist_along_route > 1)]
             history_list.append(tmp_history)
     result = pd.concat(history_list, ignore_index=True)
-    total_distance = result.dist_along_route - result.dist_from_stop
-    result['total_distance'] = total_distance
     return result
 
 
@@ -526,15 +524,10 @@ def improve_dataset_unit(segment_df, stop_sequence):
         start_index = stop_sequence.index(segment_start)
         end_index = stop_sequence.index(segment_end)
         count = end_index - start_index
-        if count < 0:
+        if count <= 0:
             print "error"
             continue
-        if count == 1:
-            result.loc[len(result)] = [segment_start, segment_end, timestamp, travel_duration]
-        try:
-            average_travel_duration = float(travel_duration) / float(count)
-        except:
-            print "error"
+        average_travel_duration = float(travel_duration) / float(count)
         for j in range(start_index, end_index):
             current_segment_start = stop_sequence[j]
             current_segment_end = stop_sequence[j + 1]
@@ -563,8 +556,7 @@ def improve_dataset():
     print "length of the total grouped list: ", len(grouped_list)
 
     result_list = []
-    # TODO fix the bug
-    for i in xrange(20429, len(grouped_list)):
+    for i in xrange(len(grouped_list)):
         if i % 1000 == 0:
             print i
         name, item = grouped_list[i]
@@ -610,10 +602,11 @@ def fix_bug_segment(segment_df):
         if i % 1000 == 0:
             print i
         name, item = grouped_list[i]
-        if len(item) < 3:
-            continue
-        current_segment = fix_bug_single_segment(item)
-        result_list.append(current_segment)
+        if len(item) < 2:
+            result_list.append(item)
+        else:
+            current_segment = fix_bug_single_segment(item)
+            result_list.append(current_segment)
     result = pd.concat(result_list, ignore_index=True)
     columns = []
     for item in result.columns:
@@ -735,19 +728,18 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
         prev_record = current_history.iloc[0]
         while i < len(current_history):
             next_record = current_history.iloc[i]
-            prev_distance = float(prev_record.dist_along_route) - float(prev_record.dist_from_stop)
-            next_distance = float(next_record.dist_along_route) - float(next_record.dist_from_stop)
+            prev_distance = float(prev_record.total_distance)
+            next_distance = float(next_record.total_distance)
             while prev_distance >= next_distance:
                 i += 1
                 if i == len(current_history):
                     break
                 next_record = current_history.iloc[i]
-                next_distance = float(next_record.dist_along_route) - float(next_record.dist_from_stop)
+                next_distance = float(next_record.total_distance)
             tmp_history.loc[len(tmp_history)] = prev_record
             prev_record = next_record
             i += 1
-        if float(prev_record.dist_along_route) - float(prev_record.dist_from_stop) > float(
-                tmp_history.iloc[-1].dist_along_route) - float(tmp_history.iloc[-1].dist_from_stop):
+        if float(prev_record.total_distance) > float(tmp_history.iloc[-1].total_distance):
             tmp_history.loc[len(tmp_history)] = prev_record
         single_history = tmp_history
         if len(single_history) < 2:
@@ -799,8 +791,8 @@ def generate_single_api(current_time, route_stop_dist, route_id, single_history,
     prev_record = single_history.iloc[0]
     next_record = single_history.iloc[1]
     # calculate the dist_along_route for current
-    prev_distance = float(prev_record['dist_along_route']) - float(prev_record['dist_from_stop'])
-    next_distance = float(next_record['dist_along_route']) - float(next_record['dist_from_stop'])
+    prev_distance = float(prev_record.total_distance)
+    next_distance = float(next_record.total_distance)
     prev_timestamp = datetime.strptime(prev_record['timestamp'], '%Y-%m-%dT%H:%M:%SZ')
     next_timestamp = datetime.strptime(next_record['timestamp'], '%Y-%m-%dT%H:%M:%SZ')
     # determine the current time
@@ -813,12 +805,10 @@ def generate_single_api(current_time, route_stop_dist, route_id, single_history,
         else:
             time_of_day = next_record['timestamp'][11:19] + current_time + 'Z'
     time_of_day = datetime.strptime(time_of_day, '%Y-%m-%dT%H:%M:%SZ')
-    dist_along_route = calculate_arrival_distance(time_of_day, prev_distance, next_distance, prev_timestamp,
-                                                  next_timestamp)
+    dist_along_route = calculate_arrival_distance(time_of_day, prev_distance, next_distance, prev_timestamp, next_timestamp)
     # Generate the return list
     # trip_id    vehicle_id    route_id    stop_id    time_of_day    date    dist_along_route
-    result = [single_trip, prev_record['vehicle_id'], route_id, stop_id, str(time_of_day), prev_record['service_date'],
-              dist_along_route]
+    result = [single_trip, prev_record['vehicle_id'], route_id, stop_id, str(time_of_day), prev_record['service_date'], dist_along_route]
     return result
 
 
@@ -834,26 +824,26 @@ def generate_single_api(current_time, route_stop_dist, route_id, single_history,
 
 if __name__ == '__main__':
     file_list = os.listdir('./')
-    # # download weather information
-    # if 'weather.csv' not in file_list:
-    #     print "download weather.csv file"
-    #     weather_df = download_weather('20160101', '20160131')
-    #     weather_df.to_csv('weather.csv')
-    #     print "complete downloading weather information"
-    # # export the route dist data
-    # if 'route_stop_dist.csv' not in file_list:
-    #     print "export route_stop_dist.csv file"
-    #     trips, stop_times, history = read_data()
-    #     route_stop_dist = calculate_stop_distance(trips, stop_times, history)
-    #     route_stop_dist.to_csv('route_stop_dist.csv')
-    #     print "complete exporting the route_stop_dist.csv file"
-    # # export the train_history.csv file
-    # if 'train_history.csv' not in file_list:
-    #     print "export train_history.csv file"
-    #     selected_trips = select_trip_list()
-    #     full_history = filter_history_data(20160104, 20160123, selected_trips)
-    #     full_history.to_csv('train_history.csv')
-    #     print "complete exporting train_history.csv file"
+    # download weather information
+    if 'weather.csv' not in file_list:
+        print "download weather.csv file"
+        weather_df = download_weather('20160101', '20160131')
+        weather_df.to_csv('weather.csv')
+        print "complete downloading weather information"
+    # export the route dist data
+    if 'route_stop_dist.csv' not in file_list:
+        print "export route_stop_dist.csv file"
+        trips, stop_times, history = read_data()
+        route_stop_dist = calculate_stop_distance(trips, stop_times, history)
+        route_stop_dist.to_csv('route_stop_dist.csv')
+        print "complete exporting the route_stop_dist.csv file"
+    # export the train_history.csv file
+    if 'train_history.csv' not in file_list:
+        print "export train_history.csv file"
+        selected_trips = select_trip_list()
+        full_history = filter_history_data(20160104, 20160123, selected_trips)
+        full_history.to_csv('train_history.csv')
+        print "complete exporting train_history.csv file"
     # export the segment data
     if 'original_segment.csv' not in file_list:
         print "export original_segment.csv file"
@@ -863,39 +853,42 @@ if __name__ == '__main__':
         segment_df = generate_original_segment(full_history, weather_df, stop_times)
         segment_df.to_csv('original_segment.csv')
         print "complete exporting the original_segement.csv file"
-    # if 'segment.csv' not in file_list:
-    #     print "export segment.csv file"
-    #     segment_df = improve_dataset()
-    #     segment_df.to_csv('segment.csv')
-    #     print "complete exporting the segment.csv file"
-    # if "final_segment.csv" not in file_list:
-    #     print "export final segment.csv file"
-    #     segment_df = pd.read_csv('segment.csv')
-    #     final_segment = fix_bug_segment(segment_df)
-    #     final_segment.to_csv('final_segment.csv')
-    #     print "complete exporting the final_segment.csv file"
-    # # export the api data
-    # if "test_history.csv" not in file_list:
-    #     print "export test_history.csv file"
-    #     selected_trips = select_trip_list()
-    #     full_history = filter_history_data(20160125, 20160130, selected_trips)
-    #     full_history.to_csv('test_history.csv')
-    #     print "complete exporting test_history.csv file"
-    # if 'api_data.csv' not in file_list:
-    #     print "export api_data.csv file"
-    #     date_list = range(20160125, 20160130)
-    #     route_stop_dist = pd.read_csv('route_stop_dist.csv')
-    #     stop_num = 4
-    #     route_list = list(set(route_stop_dist.route_id))
-    #     full_history = pd.read_csv('test_history.csv')
-    #     api_data_list = []
-    #     time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
-    #     current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
-    #     api_data_list.append(current_api_data)
-    #     time_list = ['18:00:00', '18:05:00', '18:10:00', '18:15:00', '18:20:00', '18:25:00', '18:30:00']
-    #     current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
-    #     api_data_list.append(current_api_data)
-    #     api_data = pd.concat(api_data_list)
-    #     api_data.to_csv('api_data.csv')
-    #     print "complete exporting the api_data.csv file"
-    # print "complete data collection"
+    if 'segment.csv' not in file_list:
+        print "export segment.csv file"
+        segment_df = improve_dataset()
+        segment_df.to_csv('segment.csv')
+        print "complete exporting the segment.csv file"
+    if "final_segment.csv" not in file_list:
+        print "export final segment.csv file"
+        segment_df = pd.read_csv('segment.csv')
+        final_segment = fix_bug_segment(segment_df)
+        # final_segment.to_csv('final_segment.csv')
+        print "complete exporting the final_segment.csv file"
+    # export the api data
+    if "test_history.csv" not in file_list:
+        print "export test_history.csv file"
+        selected_trips = select_trip_list()
+        full_history = filter_history_data(20160125, 20160130, selected_trips)
+        full_history.to_csv('test_history.csv')
+        print "complete exporting test_history.csv file"
+    if 'api_data.csv' not in file_list:
+        print "export api_data.csv file"
+        date_list = range(20160125, 20160130)
+        route_stop_dist = pd.read_csv('route_stop_dist.csv')
+        stop_num = 4
+        route_list = list(set(route_stop_dist.route_id))
+        full_history = pd.read_csv('test_history.csv')
+        api_data_list = []
+        time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
+        current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+        api_data_list.append(current_api_data)
+        time_list = ['18:00:00', '18:05:00', '18:10:00', '18:15:00', '18:20:00', '18:25:00', '18:30:00']
+        current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+        api_data_list.append(current_api_data)
+        api_data = pd.concat(api_data_list)
+        api_data.to_csv('api_data.csv')
+        print "complete exporting the api_data.csv file"
+    print "complete data collection"
+
+
+
