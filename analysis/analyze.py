@@ -24,7 +24,7 @@ def draw_scatter_graph(filename):
     fig = figure.get_figure()
     fig.savefig(model_name + '.png')
     # split the dataset according to the rush hour and plot the scatter
-    rush_hour = output['time_of_day'].apply(lambda x: x < '20:00:00' and x > '17:00:00')
+    rush_hour = output['time_of_day'].apply(lambda x: x[11:19] < '20:00:00' and x[11:19] > '17:00:00')
     output['rush_hour'] = rush_hour
     grouped_output = output.groupby(['rush_hour'])
     for name, item in grouped_output:
