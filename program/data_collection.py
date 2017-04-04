@@ -726,6 +726,7 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
         # stop_sequence = [str(int(item)) for item in list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)]
         stop_sequence = list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)
         # filtering the history data: remove the abnormal value
+        # TODO: use the filter single history function to replace this part
         current_history = single_history[(single_history.next_stop_id.isin(stop_sequence)) & (single_history.dist_along_route > 0)]
         if len(current_history) < 3:
             continue
