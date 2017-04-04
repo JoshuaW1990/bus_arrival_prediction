@@ -163,7 +163,8 @@ def calculate_arrival_distance(time_of_day, prev_dist, next_dist, prev_timestamp
 
 
 def filter_single_history(single_history, stop_sequence):
-    current_history = single_history[(single_history.next_stop_id.isin(stop_sequence)) & (single_history.dist_along_route > 0)]
+    current_history = single_history[
+        (single_history.next_stop_id.isin(stop_sequence)) & (single_history.dist_along_route > 0)]
     if len(current_history) < 3:
         return None
     tmp_history = pd.DataFrame(columns=current_history.columns)
@@ -430,7 +431,9 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
             time_of_day = datetime.strptime(time_of_day, '%Y-%m-%d %H:%M:%S')
             actual_arrival_time = timestamp - time_of_day
             actual_arrival_time = actual_arrival_time.total_seconds()
-            result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, str(time_of_day), service_date, dist_along_route, stop_num_from_call, estimated_arrival_time, actual_arrival_time]
+            result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, str(time_of_day), service_date,
+                                       dist_along_route, stop_num_from_call, estimated_arrival_time,
+                                       actual_arrival_time]
     return result
 
 
@@ -539,3 +542,56 @@ if __name__ == "__main__":
         baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
         baseline_result.to_csv('baseline2_result.csv')
         print "complete exporting the result baseline2"
+    if "sanity_baseline1_result.csv" not in file_list:
+        print "export the result for sanity check of baseline1"
+        route_stop_dist = pd.read_csv('route_stop_dist.csv')
+        if 'sanity_estimated_segment_baseline1.csv' not in file_list:
+            api_data = pd.read_csv('sanity_api_data.csv')
+            preprocessed_segment_data = pd.read_csv('segment_baseline1.csv')
+            route_stop_dist = pd.read_csv('route_stop_dist.csv')
+            trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
+            segment_df = generate_estimated_arrival_time(api_data, preprocessed_segment_data, route_stop_dist, trips)
+            segment_df.to_csv('sanity_estimated_segment_baseline1.csv')
+        else:
+            segment_df = pd.read_csv('sanity_estimated_segment_baseline1.csv')
+        full_history = pd.read_csv('train_history.csv')
+        full_history = full_history[full_history.service_date.isin(range(20160118, 20160124))]
+        baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
+        baseline_result.to_csv('sanity_baseline1_result.csv')
+        print "complete exporting the sanity check of result for baseline1"
+    if "sanity_baseline2_result.csv" not in file_list:
+        print "export the result for sanity check of baseline2"
+        # estimated result
+        route_stop_dist = pd.read_csv('route_stop_dist.csv')
+        if 'sanity_estimated_segment_baseline2.csv' not in file_list:
+            api_data = pd.read_csv('sanity_api_data.csv')
+            rush_hour = api_data['time_of_day'].apply(lambda x: x[11:19] < '20:00:00' and x[11:19] > '17:00:00')
+            api_data['rush_hour'] = rush_hour
+            preprocessed_segment_data = pd.read_csv('segment_baseline2.csv')
+            trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
+            grouped_segment_df = preprocessed_segment_data.groupby(['weather', 'rush_hour'])
+            grouped_api_data = api_data.groupby(['date', 'rush_hour'])
+            weather_df = pd.read_csv('weather.csv')
+            estimated_result_list = []
+            for current_date in range(20160118, 20160124):
+                print current_date
+                weather = weather_df[weather_df.date == current_date].iloc[0]['weather']
+                current_result = generate_estimated_arrival_time(grouped_api_data.get_group((current_date, True)),
+                                                                 grouped_segment_df.get_group((weather, True)),
+                                                                 route_stop_dist, trips)
+                estimated_result_list.append(current_result)
+                current_result = generate_estimated_arrival_time(grouped_api_data.get_group((current_date, False)),
+                                                                 grouped_segment_df.get_group((weather, False)),
+                                                                 route_stop_dist, trips)
+                estimated_result_list.append(current_result)
+            segment_df = pd.concat(estimated_result_list, ignore_index=True)
+            segment_df.to_csv('sanity_estimated_segment_baseline2.csv')
+        else:
+            segment_df = pd.read_csv('sanity_estimated_segment_baseline2.csv')
+
+        # actual arrival time
+        full_history = pd.read_csv('train_history.csv')
+        full_history = full_history[full_history.service_date.isin(range(20160118, 20160124))]
+        baseline_result = generate_actual_arrival_time(full_history, segment_df, route_stop_dist)
+        baseline_result.to_csv('sanity_baseline2_result.csv')
+        print "complete exporting the result of the sanity check for baseline2"

@@ -895,5 +895,23 @@ if __name__ == '__main__':
         api_data = pd.concat(api_data_list)
         api_data.to_csv('api_data.csv')
         print "complete exporting the api_data.csv file"
+    if 'sanity_api_data.csv' not in file_list:
+        print "export sanity_api_data.csv file"
+        date_list = range(20160118, 20160124)
+        route_stop_dist = pd.read_csv('route_stop_dist.csv')
+        stop_num = 4
+        route_list = list(set(route_stop_dist.route_id))
+        full_history = pd.read_csv('train_history.csv')
+        full_history = full_history[full_history.service_date.isin(date_list)]
+        api_data_list = []
+        time_list = ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']
+        current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+        api_data_list.append(current_api_data)
+        time_list = ['18:00:00', '18:05:00', '18:10:00', '18:15:00', '18:20:00', '18:25:00', '18:30:00']
+        current_api_data = generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dist, full_history)
+        api_data_list.append(current_api_data)
+        api_data = pd.concat(api_data_list)
+        api_data.to_csv('sanity_api_data.csv')
+        print "complete exporting the sanity_api_data.csv file"
     print "complete data collection"
 
