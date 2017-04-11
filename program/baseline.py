@@ -239,7 +239,7 @@ def generate_estimated_arrival_time_baseline3(api_data, segment_data, route_stop
         time_of_day = item.get('time_of_day')
         service_date = item.get('date')
         # preprocess the segment data according to the trip id and the service date
-        single_segment_data = segment_data[(segment_data['trip_id'] == trip_id) & (segment_data['service_date'] == service_date)]
+        single_segment_data = segment_data[(segment_data['trip_id'] == trip_id)]
         grouped = single_segment_data.groupby(['segment_start', 'segment_end'])
         preprocessed_segment_data = grouped['travel_duration'].mean().reset_index()
         average_travel_duration = preprocessed_segment_data['travel_duration'].mean()
