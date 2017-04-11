@@ -242,7 +242,7 @@ def generate_estimated_arrival_time_baseline3(api_data, segment_data, route_stop
         single_segment_data = segment_data[(segment_data['trip_id'] == trip_id) & (segment_data['service_date'] == service_date)]
         grouped = single_segment_data.groupby(['segment_start', 'segment_end'])
         preprocessed_segment_data = grouped['travel_duration'].mean().reset_index()
-
+        average_travel_duration = preprocessed_segment_data['travel_duration'].mean()
         # find the segment containing the current location of the api data
         if dist_along_route >= single_route_stop_dist.iloc[-1].dist_along_route:
             continue
