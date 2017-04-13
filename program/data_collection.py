@@ -463,7 +463,7 @@ def generate_original_segment_single_history(history, stop_sequence):
     """
     single_history = filter_single_history(history, stop_sequence)
     # single_history = history[history.next_stop_id.isin(stop_sequence)]
-    if len(single_history) < 3:
+    if single_history is None or len(single_history) < 3:
         return None
     arrival_time_list = []
     grouped_list = list(single_history.groupby('next_stop_id'))
