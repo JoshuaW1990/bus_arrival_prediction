@@ -35,7 +35,7 @@ for each date in date_list:
     get the weather from the weather.csv file
     get the 
 """
-def build_training_dataset(test_input, segment_df, weather_df, trips):
+def build_dataset(test_input, segment_df, weather_df, trips):
     pass
 
 

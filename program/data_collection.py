@@ -461,7 +461,8 @@ def generate_original_segment_single_history(history, stop_sequence):
     format:
     segment_start, segment_end, timestamp, travel_duration
     """
-    single_history = history[history.next_stop_id.isin(stop_sequence)]
+    single_history = filter_single_history(history, stop_sequence)
+    # single_history = history[history.next_stop_id.isin(stop_sequence)]
     if len(single_history) < 3:
         return None
     arrival_time_list = []
@@ -562,7 +563,7 @@ def improve_dataset_unit(segment_df, stop_sequence):
     return result
 
 
-def improve_dataset():
+def improve_dataset(segment_df, stop_times):
     """
     algorithm:
     split the segment dataframe by groupby(service_date, trip_id)
@@ -575,8 +576,6 @@ def improve_dataset():
 
     segment_start, segment_end, timestamp, travel_duration, weather, service date, day_of_week, trip_id, vehicle_id
     """
-    segment_df = pd.read_csv('original_segment.csv')
-    stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
     grouped_list = list(segment_df.groupby(['service_date', 'trip_id']))
     print "length of the total grouped list: ", len(grouped_list)
 
@@ -883,6 +882,20 @@ if 'full_api_data.csv' not in file_list:
     api_data.to_csv('full_api_data.csv')
     print "complete exporting the full_api_data.csv file"
 print "complete data collection"
+
+if 'full_segment.csv' not in file_list:
+    print "export full_segment.csv file"
+    stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
+    if 'full_original_segment.csv' not in file_list:
+        weather_df = pd.read_csv('weather.csv')
+        full_history = pd.read_csv('full_history.csv')
+        segment_df = generate_original_segment(full_history, weather_df, stop_times)
+        segment_df.to_csv('full_original_segment.csv')
+    else:
+        segment_df = pd.read_csv('full_original_segment.csv')
+    segment_df = improve_dataset(segment_df, stop_times)
+    segment_df.to_csv('segment.csv')
+    print "complete exporting full_segment.csv file"
 
 #################################################################################################################
 #                                    main function                                                              #
