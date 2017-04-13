@@ -563,7 +563,7 @@ def improve_dataset_unit(segment_df, stop_sequence):
     return result
 
 
-def improve_dataset(segment_df, stop_times):
+def improve_dataset(segment_df, stop_times, weather_df):
     """
     algorithm:
     split the segment dataframe by groupby(service_date, trip_id)
@@ -590,7 +590,7 @@ def improve_dataset(segment_df, stop_times):
         if current_segment is None:
             continue
         # add the other columns
-        current_segment['weather'] = item.iloc[0].weather
+        current_segment['weather'] = weather_df[weather_df.date == service_date].iloc[0].weather
         current_segment['service_date'] = service_date
         current_segment['day_of_week'] = datetime.strptime(str(service_date), '%Y%m%d').weekday()
         current_segment['trip_id'] = trip_id
@@ -886,15 +886,18 @@ print "complete data collection"
 if 'full_segment.csv' not in file_list:
     print "export full_segment.csv file"
     stop_times = pd.read_csv(path + 'data/GTFS/gtfs/stop_times.txt')
+    weather_df = pd.read_csv('weather.csv')
     if 'full_original_segment.csv' not in file_list:
-        weather_df = pd.read_csv('weather.csv')
-        full_history = pd.read_csv('full_history.csv')
-        segment_df = generate_original_segment(full_history, weather_df, stop_times)
+        test_history = pd.read_csv('test_history.csv')
+        test_segment_df = generate_original_segment(test_history, weather_df, stop_times)
+        train_segment_df = pd.read_csv('train_original_segment.csv')
+        segment_list = [train_segment_df, test_segment_df]
+        segment_df = pd.concat(segment_list, ignore_index=True)
         segment_df.to_csv('full_original_segment.csv')
     else:
         segment_df = pd.read_csv('full_original_segment.csv')
-    segment_df = improve_dataset(segment_df, stop_times)
-    segment_df.to_csv('segment.csv')
+    segment_df = improve_dataset(segment_df, stop_times, weather_df)
+    segment_df.to_csv('full_segment.csv')
     print "complete exporting full_segment.csv file"
 
 #################################################################################################################
