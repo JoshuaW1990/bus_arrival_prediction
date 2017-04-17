@@ -677,7 +677,10 @@ weather_df = pd.read_csv('weather.csv')
 
 single_trip = api_data.iloc[0].trip_id
 print single_trip
-# baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df, [single_trip])
 
-baseline_result = pd.read_csv('baseline_result.csv')
+file_list = os.listdir('./')
+if 'baseline_result.csv' not in file_list:
+    baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df, [single_trip])
+else:
+    baseline_result = pd.read_csv('baseline_result.csv')
 dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips)
