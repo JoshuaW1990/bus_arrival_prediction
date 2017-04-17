@@ -685,3 +685,4 @@ if 'baseline_result.csv' not in file_list:
 else:
     baseline_result = pd.read_csv('baseline_result.csv')
 dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips)
+dataset.to_csv('dataset.csv')
