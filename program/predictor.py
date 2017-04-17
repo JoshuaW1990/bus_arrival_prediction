@@ -650,7 +650,6 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips):
             continue
         delay_prev_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
         print 'delay_prev_trip', delay_prev_trip
-        print '\n'
 
         # 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip'
         result.loc[len(result)] = [single_record.get('weather'), single_record.get('rush_hour'), single_record.get('estimated_arrival_time'), delay_current_trip, delay_prev_trip]
