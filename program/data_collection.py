@@ -773,7 +773,7 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
         # if float(prev_record.total_distance) > float(tmp_history.iloc[-1].total_distance):
         #     tmp_history.loc[len(tmp_history)] = prev_record
         # single_history = tmp_history
-        if len(single_history) < 2:
+        if single_history is None or len(single_history) < 2:
             continue
         for target_stop in stop_set:
             target_index = stop_sequence.index(float(target_stop))
