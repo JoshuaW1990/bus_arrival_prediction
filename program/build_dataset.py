@@ -371,11 +371,11 @@ def generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full
     if trip_list is not None:
         api_data = api_data[api_data.trip_id.isin(trip_list)]
     file_list = os.listdir('./')
-    if 'estimated_segment_data.csv' not in file_list:
-        estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
-        estimated_segment_df.to_csv('estimated_segment_data.csv')
-    else:
-        estimated_segment_df = pd.read_csv('estimated_segment_data.csv')
+    # if 'estimated_segment_data.csv' not in file_list:
+    estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
+    #     estimated_segment_df.to_csv('estimated_segment_data.csv')
+    # else:
+    #     estimated_segment_df = pd.read_csv('estimated_segment_data.csv')
 
     result = generate_actual_arrival_time(full_history, estimated_segment_df, route_stop_dist)
     result['service_date'] = pd.to_numeric(result['service_date'])
@@ -383,7 +383,6 @@ def generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full
     result['weather'] = result['service_date'].apply(lambda x: weather_df[weather_df.date == x].iloc[0]['weather'])
     result['rush_hour'] = result['time_of_day'].apply(lambda x: 1 if '20:00:00' >= x[11:19] >= '17:00:00' else 0)
 
-    result.to_csv('baseline_result.csv')
     print "complete exporting the result of the dataset"
     return result
 
@@ -686,6 +685,7 @@ trip_list = list(api_data[api_data.route_id == route_id]['trip_id'])
 file_list = os.listdir('./')
 if 'baseline_result_route.csv' not in file_list:
     baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df, trip_list)
+    baseline_result.to_csv('baseline_result_route.csv')
 else:
     baseline_result = pd.read_csv('baseline_result_route.csv')
 dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips)
