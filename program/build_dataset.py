@@ -592,9 +592,8 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips):
     result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'actual_arrival_time'])
     print "length of the baseline_result.csv file: ", len(baseline_result)
     for i in xrange(len(baseline_result)):
-        print "index is ", i
-        if i == 19:
-            print i
+        if i % 500 == 0:
+            print "index is ", i
         # obtain single record, trip id, service date, route id, dist_along_route
         single_record = baseline_result.iloc[i]
         trip_id = single_record.get('trip_id')
@@ -614,7 +613,6 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips):
         if feature_api is None:
             continue
         delay_current_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
-        print 'delay_current_trip', delay_current_trip
 
         # generate the delay of the previous trip
         trip_list = list(trips[trips['route_id'] == route_id]['trip_id'])
@@ -635,7 +633,6 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips):
         if feature_api is None:
             continue
         delay_prev_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
-        print 'delay_prev_trip', delay_prev_trip
 
         # 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip'
         result.loc[len(result)] = [trip_id, service_date, single_record.get('weather'), single_record.get('rush_hour'), single_record.get('estimated_arrival_time'), delay_current_trip, delay_prev_trip, single_record.get('actual_arrival_time')]
@@ -662,18 +659,18 @@ segment_df = pd.read_csv('full_segment.csv')
 api_data = pd.read_csv('full_api_data.csv')
 weather_df = pd.read_csv('weather.csv')
 
-single_trip = api_data.iloc[0].trip_id
-print single_trip
-route_id = api_data.iloc[0].route_id
-trip_list = list(api_data[api_data.route_id == route_id]['trip_id'])
-
-
+# single_trip = api_data.iloc[0].trip_id
+# print single_trip
+# route_id = api_data.iloc[0].route_id
+# trip_list = list(api_data[api_data.route_id == route_id]['trip_id'])
+#
+#
 
 file_list = os.listdir('./')
-if 'baseline_result_route.csv' not in file_list:
-    baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df, trip_list)
-    baseline_result.to_csv('baseline_result_route.csv')
+if 'full_baseline_result.csv' not in file_list:
+    baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df)
+    baseline_result.to_csv('full_baseline_result.csv')
 else:
-    baseline_result = pd.read_csv('baseline_result_route.csv')
+    baseline_result = pd.read_csv('full_baseline_result.csv')
 dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips)
-dataset.to_csv('dataset_route.csv')
+dataset.to_csv('full_dataset.csv')
