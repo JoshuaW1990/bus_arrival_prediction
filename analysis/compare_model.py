@@ -18,31 +18,7 @@ def compare_model(filename):
     output.plot(kind='scatter', y='SVM', x='actual_arrival_time', xlim=(0, 1500), ylim=(0, 1500), ax=axes[1, 0])
     output.plot(kind='scatter', y='NN', x='actual_arrival_time', xlim=(0, 1500), ylim=(0, 1500), ax=axes[1, 1])
     fig.savefig(filename[:-4] + '.png')
-        # # split the dataset according to the rush hour and plot the scatter
-        # rush_hour = output['time_of_day'].apply(lambda x: x[11:19] < '20:00:00' and x[11:19] > '17:00:00')
-        # output['rush_hour'] = rush_hour
-        # grouped_output = output.groupby(['rush_hour'])
-        # for name, item in grouped_output:
-        #     filename = str(name) + model_name + '.png'
-        #     figure = item.plot(kind='scatter', y='estimated_arrival_time', x='actual_arrival_time', xlim=(0, 10000),
-        #                          ylim=(0, 10000))
-        #     fig = figure.get_figure()
-        #     fig.savefig(filename)
-        # # split the dataset according to the rush hour and plot the scatter
-        # weather_df = pd.read_csv('../program/weather.csv')
-        # weather = output['service_date'].apply(lambda x: weather_df[weather_df.date == x].iloc[0].weather)
-        # output['weather'] = weather
-        # grouped_output = output.groupby(['weather'])
-        # weather_dict = {}
-        # weather_dict[0] = 'sunny'
-        # weather_dict[1] = 'rainy'
-        # weather_dict[2] = 'snowy'
-        # for name, item, in grouped_output:
-        #     filename = weather_dict[name] + model_name + '.png'
-        #     figure = item.plot(kind='scatter', y='estimated_arrival_time', x='actual_arrival_time', xlim=(0, 10000),
-        #                        ylim=(0, 10000))
-        #     fig = figure.get_figure()
-        #     fig.savefig(filename)
+
 
 def calculate_MSE(filename):
     result = dict()
@@ -59,13 +35,15 @@ def calculate_MSE(filename):
 file_list = os.listdir('./')
 result = []
 for filename in file_list:
+    print filename
     if filename.endswith('.csv'):
         # compare_model(filename)
         result.append(calculate_MSE(filename))
+        print result
     else:
         continue
-with open('MSE_result.json', 'w') as f:
-    json.dump(result, f)
+# with open('MSE_result.json', 'w') as f:
+#     json.dump(result, f)
 
 
 
