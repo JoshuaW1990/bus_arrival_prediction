@@ -155,10 +155,10 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
     result = pd.DataFrame(
         columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route',
                  'stop_num_from_call', 'estimated_arrival_time'])
-    print "baseline3 length of api data: ", len(api_data)
+    # print "baseline3 length of api data: ", len(api_data)
     for i in xrange(len(api_data)):
-        if i % 1000 == 0:
-            print i
+        # if i % 1000 == 0:
+        #     print i
         # get the variables
         item = api_data.iloc[i]
         trip_id = item.get('trip_id')
@@ -700,8 +700,8 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
     result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops', 'actual_arrival_time'])
     print "length of the baseline_result.csv file: ", len(baseline_result)
     for i in xrange(len(baseline_result)):
-        # if i % 500 == 0:
-        print "index is ", i
+        if i % 1000 == 0:
+            print "index is ", i
         # obtain single record, trip id, service date, route id, dist_along_route
         single_record = baseline_result.iloc[i]
         trip_id = single_record.get('trip_id')
@@ -766,7 +766,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         filtered_segment = filtered_segment[(filtered_segment.segment_start.isin(filtered_stop_sequence[:-1])) & (filtered_segment.segment_end.isin(filtered_stop_sequence[1:]))]
         filtered_segment = filtered_segment[filtered_segment['timestamp'].apply(lambda x: datetime.strptime(x[:19], '%Y-%m-%d %H:%M:%S') <= datetime.strptime(time_of_day, '%Y-%m-%d %H:%M:%S'))]
         prev_arrival_time = calcualte_prev_arrival_time(filtered_segment, segment_list, dist_along_route, single_route_stop_dist)
-        print "previous arrival time: ", prev_arrival_time
+        # print "previous arrival time: ", prev_arrival_time
 
         # generate the delay_neighbor_stops
         tmp_time_of_day = str(datetime.strptime(time_of_day, '%Y-%m-%d %H:%M:%S') - timedelta(0, 1800))
