@@ -700,7 +700,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
     result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops', 'actual_arrival_time'])
     print "length of the baseline_result.csv file: ", len(baseline_result)
     for i in xrange(len(baseline_result)):
-        if i % 1000 == 0:
+        if i % 100 == 0:
             print "index is ", i
         # obtain single record, trip id, service date, route id, dist_along_route
         single_record = baseline_result.iloc[i]
@@ -773,7 +773,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         filtered_segment = segment_df[(segment_df.timestamp <= time_of_day) & (segment_df.timestamp >= tmp_time_of_day)]
         grouped = filtered_segment.groupby(['trip_id'])
         delay_neighbor_stops_list = []
-        print "length of the grouped dataframe when generating delay_neighbor_stops: ", len(grouped)
+        # print "length of the grouped dataframe when generating delay_neighbor_stops: ", len(grouped)
         for name, item in grouped:
             current_trip_id = name
             current_route_id = trips[trips.trip_id == current_trip_id].iloc[0]['route_id']
