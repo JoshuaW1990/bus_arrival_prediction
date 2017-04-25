@@ -131,7 +131,7 @@ def filter_single_history(single_history, stop_sequence):
     return tmp_history
 
 
-def generate_estimated_arrival_time_baseline3(api_data, segment_data, route_stop_dist, trips):
+def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route_stop_dist, trips):
     """
     Calculate the estimated arrival time based on the baseline 3. Use the segment data according to the specific trip and the date to predict the result
 
@@ -155,7 +155,10 @@ def generate_estimated_arrival_time_baseline3(api_data, segment_data, route_stop
     result = pd.DataFrame(
         columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route',
                  'stop_num_from_call', 'estimated_arrival_time'])
+    print "baseline3 length of api data: ", len(api_data)
     for i in xrange(len(api_data)):
+        if i % 1000 == 0:
+            print i
         # get the variables
         item = api_data.iloc[i]
         trip_id = item.get('trip_id')
@@ -169,6 +172,7 @@ def generate_estimated_arrival_time_baseline3(api_data, segment_data, route_stop
         time_of_day = item.get('time_of_day')
         service_date = item.get('date')
         # preprocess the segment data according to the trip id and the service date
+        segment_data = full_segment_data[full_segment_data.service_date != service_date]
         single_segment_data = segment_data[(segment_data['trip_id'] == trip_id)]
         grouped = single_segment_data.groupby(['segment_start', 'segment_end'])
         preprocessed_segment_data = grouped['travel_duration'].mean().reset_index()
