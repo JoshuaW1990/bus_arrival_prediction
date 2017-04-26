@@ -803,11 +803,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
             continue
         grouped = filtered_segment.groupby(['trip_id'])
         delay_neighbor_stops_list = []
-        # print "length of the grouped dataframe when generating delay_neighbor_stops: ", len(grouped)
-        # count = 0
         for name, item in grouped:
-            # print count
-            # count += 1
             current_trip_id = name
             current_route_id = trips[trips.trip_id == current_trip_id].iloc[0]['route_id']
             current_route_stop_dist = route_stop_dist[route_stop_dist.route_id == current_route_id]
@@ -874,6 +870,14 @@ else:
     baseline_result = pd.read_csv('full_baseline_result.csv')
 
 # baseline_result = pd.read_csv('baseline_result.csv')
+
+
+# Preprocess the full_baseline_result to obtain part of the route ids to test
+route_set = set(baseline_result.route_id)
+route_list = sorted(list(route_set))
+ROUTE_NUM = 1
+route_filter_list = route_list[:ROUTE_NUM]
+baseline_result = baseline_result[baseline_result.route_id.isin(route_filter_list)]
 
 dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
 dataset.to_csv('full_dataset.csv')
