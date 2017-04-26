@@ -737,6 +737,8 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         # generate delay of the current trip
         single_segment = segment_df[(segment_df.trip_id == trip_id) & (segment_df.service_date.isin([service_date]))]
         single_segment = single_segment[single_segment['timestamp'] <= time_of_day]
+        if len(single_segment) == 0:
+            continue
         current_time_of_day = single_segment.iloc[0]['timestamp']
         target_dist = dist_along_route
         initial_dist = single_route_stop_dist[single_route_stop_dist['stop_id'] == single_segment.iloc[0]['segment_start']].iloc[0]['dist_along_route']
@@ -797,6 +799,8 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         # generate the delay_neighbor_stops
         tmp_time_of_day = str(datetime.strptime(time_of_day, '%Y-%m-%d %H:%M:%S') - timedelta(0, 1800))
         filtered_segment = segment_df[(segment_df.timestamp <= time_of_day) & (segment_df.timestamp >= tmp_time_of_day)]
+        if len(filtered_segment) == 0:
+            continue
         grouped = filtered_segment.groupby(['trip_id'])
         delay_neighbor_stops_list = []
         # print "length of the grouped dataframe when generating delay_neighbor_stops: ", len(grouped)
@@ -823,7 +827,10 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
                 if feature_api is None:
                     continue
                 delay_neighbor_stops_list.append(calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips))
-        delay_neighbor_stops = sum(delay_neighbor_stops_list) / float(len(delay_neighbor_stops_list))
+        if len(delay_neighbor_stops_list) == 0:
+            delay_neighbor_stops = 0.0
+        else:
+            delay_neighbor_stops = sum(delay_neighbor_stops_list) / float(len(delay_neighbor_stops_list))
         # print delay_neighbor_stops
 
 
