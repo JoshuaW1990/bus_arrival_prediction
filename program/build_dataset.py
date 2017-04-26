@@ -722,7 +722,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
     result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops', 'actual_arrival_time'])
     print "length of the baseline_result.csv file: ", len(baseline_result)
     for i in xrange(len(baseline_result)):
-        if i % 100 == 0:
+        if i % 10 == 0:
             print "index is ", i
         # obtain single record, trip id, service date, route id, dist_along_route
         single_record = baseline_result.iloc[i]
