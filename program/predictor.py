@@ -15,11 +15,11 @@ def split_dataset(dataset):
     test_set = dataset[dataset.service_date >= 20160125].reset_index()
 
     train_X = training_set.as_matrix(
-        columns=['weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip'])
+        columns=['weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'delay_arrival_time', 'delay_neighbor_stops'])
     train_Y = training_set.as_matrix(columns=['actual_arrival_time'])
 
     test_X = test_set.as_matrix(
-        columns=['weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip'])
+        columns=['weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'delay_arrival_time', 'delay_neighbor_stops'])
     test_Y = test_set.as_matrix(columns=['actual_arrival_time'])
 
     return train_X, train_Y, test_X, test_Y
@@ -47,7 +47,7 @@ def build_result_dataset(train_X, train_Y, test_X, test_Y):
     return result
 
 
-dataset = pd.read_csv('dataset_route.csv')
+dataset = pd.read_csv('full_dataset_1.csv')
 # single trip result
 single_trip = dataset.iloc[0]['trip_id']
 current_dataset = dataset[dataset.trip_id == single_trip]
@@ -60,3 +60,4 @@ current_dataset = dataset
 train_X, train_Y, test_X, test_Y = split_dataset(current_dataset)
 result = build_result_dataset(train_X, train_Y, test_X, test_Y)
 result.to_csv('single_route_result.csv')
+

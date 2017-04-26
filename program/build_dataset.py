@@ -172,8 +172,9 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
         time_of_day = item.get('time_of_day')
         service_date = item.get('date')
         # preprocess the segment data according to the trip id and the service date
-        segment_data = full_segment_data[full_segment_data.service_date != service_date]
-        single_segment_data = segment_data[(segment_data['trip_id'] == trip_id)]
+        segment_data = full_segment_data[(full_segment_data.service_date != service_date) | (full_segment_data.trip_id != trip_id)]
+        trip_list = set(trips[trips.route_id == route_id].trip_id)
+        single_segment_data = segment_data[(segment_data.trip_id.isin(trip_list))]
         grouped = single_segment_data.groupby(['segment_start', 'segment_end'])
         preprocessed_segment_data = grouped['travel_duration'].mean().reset_index()
         average_travel_duration = preprocessed_segment_data['travel_duration'].mean()
@@ -721,13 +722,15 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
     """
     result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops', 'actual_arrival_time'])
     print "length of the baseline_result.csv file: ", len(baseline_result)
-    for i in xrange(len(baseline_result)):
+    for i in xrange(130, len(baseline_result)):
         if i % 10 == 0:
             print "index is ", i
         # obtain single record, trip id, service date, route id, dist_along_route
         single_record = baseline_result.iloc[i]
         trip_id = single_record.get('trip_id')
         service_date = single_record.get('service_date')
+        if service_date == 20160118:
+            print "come to debug place"
         route_id = single_record.get('route_id')
         stop_id = single_record.get('stop_id')
         dist_along_route = single_record.get('dist_along_route')
@@ -861,6 +864,9 @@ stops = pd.read_csv(path + 'data/GTFS/gtfs/stops.txt')
 # route_id = api_data.iloc[0].route_id
 # trip_list = list(api_data[api_data.route_id == route_id]['trip_id'])
 
+# single_trip = 'CA_H6-Weekday-044000_MISC_488'
+# baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df, [single_trip])
+
 
 file_list = os.listdir('./')
 if 'full_baseline_result.csv' not in file_list:
@@ -869,15 +875,13 @@ if 'full_baseline_result.csv' not in file_list:
 else:
     baseline_result = pd.read_csv('full_baseline_result.csv')
 
-# baseline_result = pd.read_csv('baseline_result.csv')
 
-
-# Preprocess the full_baseline_result to obtain part of the route ids to test
-route_set = set(baseline_result.route_id)
-route_list = sorted(list(route_set))
-ROUTE_NUM = 3
-route_filter_list = route_list[:ROUTE_NUM]
-baseline_result = baseline_result[baseline_result.route_id.isin(route_filter_list)]
-
-dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
+# # Preprocess the full_baseline_result to obtain part of the route ids to test
+# route_set = set(baseline_result.route_id)
+# route_list = sorted(list(route_set))
+# ROUTE_NUM = 1
+# route_filter_list = route_list[:ROUTE_NUM]
+# baseline_result = baseline_result[baseline_result.route_id.isin(route_filter_list)]
+#
+# dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
 # dataset.to_csv('full_dataset_3.csv')
