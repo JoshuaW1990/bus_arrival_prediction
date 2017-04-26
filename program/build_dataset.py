@@ -875,9 +875,9 @@ else:
 # Preprocess the full_baseline_result to obtain part of the route ids to test
 route_set = set(baseline_result.route_id)
 route_list = sorted(list(route_set))
-ROUTE_NUM = 1
+ROUTE_NUM = 3
 route_filter_list = route_list[:ROUTE_NUM]
 baseline_result = baseline_result[baseline_result.route_id.isin(route_filter_list)]
 
 dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
-dataset.to_csv('full_dataset.csv')
+dataset.to_csv('full_dataset_3.csv')
