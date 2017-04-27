@@ -166,7 +166,11 @@ def calculate_stop_distance(trips, stop_times, history, direction_id=0):
     for route_id, single_route_history in route_grouped:
         flag = 0
         current_result = pd.DataFrame(columns=['route_id', 'direction_id', 'stop_id', 'dist_along_route'])
-        current_result['stop_id'] = stop_times[stop_times.route_id == route_id]['stop_id']
+        single_stop_times = stop_times[stop_times.route_id == route_id]
+        trip_id = single_stop_times.iloc[0]['trip_id']
+        single_stop_times = single_stop_times[single_stop_times.trip_id == trip_id]
+        single_stop_times.reset_index(inplace=True)
+        current_result['stop_id'] = single_stop_times['stop_id']
         current_result['route_id'] = route_id
         current_result['direction_id'] = direction_id
         stop_grouped = single_route_history.groupby(['next_stop_id']).mean().reset_index()
@@ -178,7 +182,7 @@ def calculate_stop_distance(trips, stop_times, history, direction_id=0):
                 flag = 1
                 break
             else:
-                dist_along_route = stop_grouped[stop_grouped.next_stop_id == next_stop_id].iloc[0]['next_stop_id']
+                dist_along_route = stop_grouped[stop_grouped.next_stop_id == next_stop_id].iloc[0]['dist_along_route']
                 current_result.set_value(i, 'dist_along_route', dist_along_route)
         if flag == 1:
             continue
@@ -949,10 +953,10 @@ if __name__ == '__main__':
     # export the route dist data
     if 'route_stop_dist.csv' not in file_list:
         print "export route_stop_dist.csv file"
-        trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
-        stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
-        history = pd.read_csv('full_history.csv')
-        # trips, stop_times, history = read_data()
+        # trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
+        # stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
+        # history = pd.read_csv('full_history.csv')
+        trips, stop_times, history = read_data()
         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
         route_stop_dist.to_csv('route_stop_dist.csv')
         print "complete exporting the route_stop_dist.csv file"
