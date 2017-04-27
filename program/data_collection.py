@@ -179,6 +179,7 @@ def calculate_stop_distance(trips, stop_times, history, direction_id=0):
         current_result['shape_id'] = shape_id
         current_result['direction_id'] = direction_id
         stop_grouped = single_route_history.groupby(['next_stop_id']).mean().reset_index()
+        stop_grouped['next_stop_id'] = pd.to_numeric(stop_grouped['next_stop_id'])
         stop_set = set(stop_grouped['next_stop_id'])
         for i in xrange(len(current_result)):
             next_stop_id = current_result.iloc[i]['stop_id']
@@ -960,8 +961,8 @@ if __name__ == '__main__':
         print "export route_stop_dist.csv file"
         trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
         stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
-        history = pd.read_csv('full_history.csv')
-        # history = pd.read_csv('complete_history.csv')
+        # history = pd.read_csv('full_history.csv')
+        history = pd.read_csv('complete_history.csv')
         # trips, stop_times, history = read_data()
         # history.to_csv('complete_history.csv')
         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
