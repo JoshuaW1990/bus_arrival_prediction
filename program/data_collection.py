@@ -953,10 +953,11 @@ if __name__ == '__main__':
     # export the route dist data
     if 'route_stop_dist.csv' not in file_list:
         print "export route_stop_dist.csv file"
-        # trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
-        # stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
-        # history = pd.read_csv('full_history.csv')
-        trips, stop_times, history = read_data()
+        trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
+        stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
+        history = pd.read_csv('complete_history.csv')
+        # trips, stop_times, history = read_data()
+        # history.to_csv('complete_history.csv')
         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
         route_stop_dist.to_csv('route_stop_dist.csv')
         print "complete exporting the route_stop_dist.csv file"
