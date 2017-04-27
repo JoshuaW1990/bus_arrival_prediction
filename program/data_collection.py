@@ -160,18 +160,23 @@ def calculate_stop_distance(trips, stop_times, history, direction_id=0):
     # result = pd.DataFrame(columns=['route_id', 'direction_id', 'stop_id', 'dist_along_route'])
     trip_route_dict = trips.set_index('trip_id').to_dict(orient='index')
     history['route_id'] = history['trip_id'].apply(lambda x: trip_route_dict[x]['route_id'])
+    history['shape_id'] = history['trip_id'].apply(lambda x: trip_route_dict[x]['shape_id'])
     stop_times['route_id'] = stop_times['trip_id'].apply(lambda x: trip_route_dict[x]['route_id'])
-    route_grouped = history.groupby(['route_id'])
+    stop_times['shape_id'] = stop_times['trip_id'].apply(lambda x: trip_route_dict[x]['shape_id'])
+    route_grouped_history = history.groupby(['route_id', 'shape_id'])
+    route_grouped_stop_times = stop_times.groupby(['route_id', 'shape_id'])
     result_list = []
-    for route_id, single_route_history in route_grouped:
+    for name, single_route_history in route_grouped_history:
+        route_id, shape_id = name
         flag = 0
-        current_result = pd.DataFrame(columns=['route_id', 'direction_id', 'stop_id', 'dist_along_route'])
-        single_stop_times = stop_times[stop_times.route_id == route_id]
+        current_result = pd.DataFrame()
+        single_stop_times = route_grouped_stop_times.get_group((route_id, shape_id))
         trip_id = single_stop_times.iloc[0]['trip_id']
         single_stop_times = single_stop_times[single_stop_times.trip_id == trip_id]
         single_stop_times.reset_index(inplace=True)
         current_result['stop_id'] = single_stop_times['stop_id']
         current_result['route_id'] = route_id
+        current_result['shape_id'] = shape_id
         current_result['direction_id'] = direction_id
         stop_grouped = single_route_history.groupby(['next_stop_id']).mean().reset_index()
         stop_set = set(stop_grouped['next_stop_id'])
@@ -955,7 +960,8 @@ if __name__ == '__main__':
         print "export route_stop_dist.csv file"
         trips = pd.read_csv('../data/GTFS/gtfs/trips.txt')
         stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
-        history = pd.read_csv('complete_history.csv')
+        history = pd.read_csv('full_history.csv')
+        # history = pd.read_csv('complete_history.csv')
         # trips, stop_times, history = read_data()
         # history.to_csv('complete_history.csv')
         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
