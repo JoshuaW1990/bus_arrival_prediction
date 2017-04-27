@@ -157,12 +157,6 @@ def calculate_stop_distance(trips, stop_times, history, direction_id=0):
     route_id    direction_id    stop_id    dist_along_route
     str         int             int        float
     """
-    # result = pd.DataFrame(columns=['route_id', 'direction_id', 'stop_id', 'dist_along_route'])
-    trip_route_dict = trips.set_index('trip_id').to_dict(orient='index')
-    history['route_id'] = history['trip_id'].apply(lambda x: trip_route_dict[x]['route_id'])
-    history['shape_id'] = history['trip_id'].apply(lambda x: trip_route_dict[x]['shape_id'])
-    stop_times['route_id'] = stop_times['trip_id'].apply(lambda x: trip_route_dict[x]['route_id'])
-    stop_times['shape_id'] = stop_times['trip_id'].apply(lambda x: trip_route_dict[x]['shape_id'])
     route_grouped_history = history.groupby(['route_id', 'shape_id'])
     route_grouped_stop_times = stop_times.groupby(['route_id', 'shape_id'])
     result_list = []
@@ -963,6 +957,13 @@ if __name__ == '__main__':
         stop_times = pd.read_csv('../data/GTFS/gtfs/stop_times.txt')
         # history = pd.read_csv('full_history.csv')
         history = pd.read_csv('complete_history.csv')
+        trip_route_dict = trips.set_index('trip_id').to_dict(orient='index')
+        history['route_id'] = history['trip_id'].apply(lambda x: trip_route_dict[x]['route_id'])
+        history['shape_id'] = history['trip_id'].apply(lambda x: trip_route_dict[x]['shape_id'])
+        stop_times['route_id'] = stop_times['trip_id'].apply(lambda x: trip_route_dict[x]['route_id'])
+        stop_times['shape_id'] = stop_times['trip_id'].apply(lambda x: trip_route_dict[x]['shape_id'])
+        history.to_csv('preprocessed_complete_history.csv')
+        stop_times.to_csv('preprocessed_stop_times.csv')
         # trips, stop_times, history = read_data()
         # history.to_csv('complete_history.csv')
         route_stop_dist = calculate_stop_distance(trips, stop_times, history)
