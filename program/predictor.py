@@ -49,10 +49,15 @@ def build_result_dataset(train_X, train_Y, test_X, test_Y):
 
 dataset = pd.read_csv('full_dataset_1.csv')
 # single trip result
-single_trip = dataset.iloc[0]['trip_id']
-current_dataset = dataset[dataset.trip_id == single_trip]
-train_X, train_Y, test_X, test_Y = split_dataset(current_dataset)
-result = build_result_dataset(train_X, train_Y, test_X, test_Y)
+grouped = dataset.groupby(['trip_id'])
+result_list = []
+for name, item in grouped:
+    single_trip = name
+    current_dataset = item
+    train_X, train_Y, test_X, test_Y = split_dataset(current_dataset)
+    current_result = build_result_dataset(train_X, train_Y, test_X, test_Y)
+    result_list.append(current_result)
+result = pd.concat(result_list, ignore_index=True)
 result.to_csv('single_trip_result.csv')
 
 # single route result

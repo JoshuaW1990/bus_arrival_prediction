@@ -598,10 +598,7 @@ def calcualte_prev_arrival_time(filtered_segment, segment_list, dist_along_route
     grouped = filtered_segment.groupby(['segment_start', 'segment_end'])
     # obtain the arrival time in the first segment list
     current_segment = segment_list[0]
-    try:
-        single_record = grouped.get_group(current_segment).iloc[-1]
-    except:
-        print "error"
+    single_record = grouped.get_group(current_segment).iloc[-1]
     distance_stop_stop = single_record['segment_end_dist'] - single_record['segment_start_dist']
     distance_loc_stop = single_record['segment_end_dist'] - dist_along_route
     ratio = distance_loc_stop / distance_stop_stop
@@ -885,6 +882,9 @@ else:
 # ROUTE_NUM = 1
 # route_filter_list = route_list[:ROUTE_NUM]
 # baseline_result = baseline_result[baseline_result.route_id.isin(route_filter_list)]
+
+# Preprocess the full_baseline_result to remove the first day of the baseline_result data to avoid error
+baseline_result = baseline_result[baseline_result.service_date > 20160104]
 
 dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
 dataset.to_csv('full_dataset.csv')
