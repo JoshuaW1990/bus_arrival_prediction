@@ -158,8 +158,9 @@ def calculate_stop_distance(trips, stop_times, history, direction_id=0):
     str         int             int        float
     """
     # result = pd.DataFrame(columns=['route_id', 'direction_id', 'stop_id', 'dist_along_route'])
-    history['route_id'] = history['trip_id'].apply(lambda x: trips[trips.trip_id == x].iloc[0]['route_id'])
-    stop_times['route_id'] = stop_times['trip_id'].apply(lambda x: trips[trips.trip_id == x].iloc[0]['route_id'])
+    trip_route_dict = trips.set_index('trip_id').to_dict(orient='index')
+    history['route_id'] = history['trip_id'].apply(lambda x: trip_route_dict[x]['route_id'])
+    stop_times['route_id'] = stop_times['trip_id'].apply(lambda x: trip_route_dict[x]['route_id'])
     route_grouped = history.groupby(['route_id'])
     result_list = []
     for route_id, single_route_history in route_grouped:
