@@ -166,7 +166,7 @@ def calculate_stop_distance(trips, stop_times, history, direction_id=0):
     for route_id, single_route_history in route_grouped:
         flag = 0
         current_result = pd.DataFrame(columns=['route_id', 'direction_id', 'stop_id', 'dist_along_route'])
-        current_result['stop_id'] = stop_times[stop_times.route_id == route_id]
+        current_result['stop_id'] = stop_times[stop_times.route_id == route_id]['stop_id']
         current_result['route_id'] = route_id
         current_result['direction_id'] = direction_id
         stop_grouped = single_route_history.groupby(['next_stop_id']).mean().reset_index()
