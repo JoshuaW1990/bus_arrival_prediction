@@ -8,9 +8,9 @@ import json
 # function for graphing
 def compare_model(filename):
     # read the dataset
+    plt.style.use('ggplot')
     output = pd.read_csv(filename)
     fig, axes = plt.subplots(nrows=2, ncols=2)
-    plt.style.use('ggplot')
     # plot the scatter for the whole dataset
     output.plot(kind='scatter', y='baseline', x='actual_arrival_time', xlim=(0, 1500), ylim=(0, 1500), ax=axes[0,0])
     output.plot(kind='scatter', y='linear_regression', x='actual_arrival_time', xlim=(0, 1500), ylim=(0, 1500),
@@ -37,11 +37,12 @@ result = []
 for filename in file_list:
     print filename
     if filename.endswith('.csv'):
-        # compare_model(filename)
-        result.append(calculate_MSE(filename))
-        print result
+        compare_model(filename)
+        # result.append({filename: calculate_MSE(filename)})
+        # print result
     else:
         continue
+
 # with open('MSE_result.json', 'w') as f:
 #     json.dump(result, f)
 

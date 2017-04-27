@@ -33,10 +33,7 @@ def build_result_dataset(train_X, train_Y, test_X, test_Y):
     print 'linear regression'
     model = linear_model.LinearRegression()
     model.fit(train_X, train_Y)
-    try:
-        predict_Y = model.predict(test_X)
-    except:
-        print "error"
+    predict_Y = model.predict(test_X)
     print 'SVM'
     result['linear_regression'] = predict_Y
     model = svm.SVR()
@@ -59,6 +56,8 @@ for name, item in grouped:
     single_trip = name
     current_dataset = item
     train_X, train_Y, test_X, test_Y = split_dataset(current_dataset)
+    if len(train_X) < len(test_X) or len(test_X) == 0:
+        continue
     current_result = build_result_dataset(train_X, train_Y, test_X, test_Y)
     result_list.append(current_result)
 result = pd.concat(result_list, ignore_index=True)
