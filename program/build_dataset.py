@@ -427,8 +427,10 @@ def generate_feature_api(single_segment, dist_along_route, target_dist, time_of_
     """
     feature_api = pd.DataFrame(columns=['actual_arrival_time'])
     # get the single segment smaller or equal than the target_dist
-    current_segment = single_segment[single_segment['segment_end'].apply(
-        lambda x: single_route_stop_dist[single_route_stop_dist['stop_id'] == x].iloc[0]['dist_along_route'] <= target_dist)]
+    try:
+        current_segment = single_segment[single_segment['segment_end'].apply(lambda x: single_route_stop_dist[single_route_stop_dist['stop_id'] == x].iloc[0]['dist_along_route'] <= target_dist)]
+    except:
+        print "error"
     index = 0
     while index < len(current_segment):
         if single_route_stop_dist[single_route_stop_dist['stop_id'] == current_segment.iloc[index]['segment_start']].iloc[0]['dist_along_route'] < dist_along_route:
@@ -722,7 +724,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
     """
     result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time',  'actual_arrival_time'])
     print "length of the baseline_result.csv file: ", len(baseline_result)
-    for i in xrange(len(baseline_result)):
+    for i in xrange(300, len(baseline_result)):
         if i % 100 == 0:
             print "index is ", i
         # obtain single record, trip id, service date, route id, dist_along_route

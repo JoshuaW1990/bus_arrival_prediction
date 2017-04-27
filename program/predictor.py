@@ -5,6 +5,7 @@ Predict the dataset with the dataset
 # import the modules
 import pandas as pd
 from sklearn import linear_model, svm, neural_network
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error as MSE
 import matplotlib.pyplot as plt
 
@@ -15,11 +16,11 @@ def split_dataset(dataset):
     test_set = dataset[dataset.service_date >= 20160125].reset_index()
 
     train_X = training_set.as_matrix(
-        columns=['weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'delay_arrival_time', 'delay_neighbor_stops'])
+        columns=['weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops'])
     train_Y = training_set.as_matrix(columns=['actual_arrival_time'])
 
     test_X = test_set.as_matrix(
-        columns=['weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'delay_arrival_time', 'delay_neighbor_stops'])
+        columns=['weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops'])
     test_Y = test_set.as_matrix(columns=['actual_arrival_time'])
 
     return train_X, train_Y, test_X, test_Y
@@ -32,7 +33,10 @@ def build_result_dataset(train_X, train_Y, test_X, test_Y):
     print 'linear regression'
     model = linear_model.LinearRegression()
     model.fit(train_X, train_Y)
-    predict_Y = model.predict(test_X)
+    try:
+        predict_Y = model.predict(test_X)
+    except:
+        print "error"
     print 'SVM'
     result['linear_regression'] = predict_Y
     model = svm.SVR()
