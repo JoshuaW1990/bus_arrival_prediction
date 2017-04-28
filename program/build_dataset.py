@@ -155,10 +155,10 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
     result = pd.DataFrame(
         columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route',
                  'stop_num_from_call', 'estimated_arrival_time'])
-    # print "baseline3 length of api data: ", len(api_data)
+    print "baseline3 length of api data: ", len(api_data)
     for i in xrange(len(api_data)):
-        # if i % 1000 == 0:
-        #     print i
+        if i % 1000 == 0:
+            print i
         # get the variables
         item = api_data.iloc[i]
         trip_id = item.get('trip_id')
@@ -274,8 +274,7 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
     :return: dataframe including both of the estimated arrival time and actual arrival time
     """
     result = pd.DataFrame(
-        columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route',
-                 'stop_num_from_call', 'estimated_arrival_time', 'actual_arrival_time'])
+        columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time', 'actual_arrival_time', 'shape_id'])
     grouped_list = list(segment_df.groupby(['service_date', 'trip_id', 'stop_id']))
     print 'length of the segment_df is: ', len(grouped_list)
     for i in xrange(len(grouped_list)):
@@ -284,6 +283,7 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
         name, item = grouped_list[i]
         service_date, trip_id, target_stop = name
         route_id = item.iloc[0]['route_id']
+        shape_id = item.iloc[0]['shape_id']
         single_route_stop_dist = route_stop_dist[route_stop_dist.route_id == route_id]
         stop_sequence = list(single_route_stop_dist.stop_id)
         # stop_sequence_str = [str(int(stop_id)) for stop_id in stop_sequence]
@@ -331,9 +331,7 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
             actual_arrival_time = timestamp - time_of_day
             actual_arrival_time = actual_arrival_time.total_seconds()
             dist_along_route = single_record.get('dist_along_route')
-            result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, str(time_of_day), service_date,
-                                       dist_along_route, stop_num_from_call, estimated_arrival_time,
-                                       actual_arrival_time]
+            result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, str(time_of_day), service_date, dist_along_route, stop_num_from_call, estimated_arrival_time, actual_arrival_time, shape_id]
     return result
 
 
@@ -377,6 +375,7 @@ def generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full
     if trip_list is not None:
         api_data = api_data[api_data.trip_id.isin(trip_list)]
     estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
+    estimated_segment_df.to_csv('tmp.csv')
     result = generate_actual_arrival_time(full_history, estimated_segment_df, route_stop_dist)
     result['service_date'] = pd.to_numeric(result['service_date'])
 
@@ -750,7 +749,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         feature_api = generate_feature_api(single_segment, initial_dist, target_dist, current_time_of_day, single_route_stop_dist)
         if feature_api is None:
             continue
-        delay_current_trip = calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips)
+        delay_current_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
         # print delay_current_trip
 
         # generate the delay of the previous trip
@@ -771,7 +770,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         feature_api = generate_feature_api(single_segment, dist_along_route, target_dist, current_time_of_day, single_route_stop_dist)
         if feature_api is None:
             continue
-        delay_prev_trip = calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips)
+        delay_prev_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
         # print delay_prev_trip
 
         # generate the prev_arrival_time
@@ -871,7 +870,7 @@ file_list = os.listdir('./')
 if 'full_baseline_result.csv' not in file_list:
     api_data = pd.read_csv('full_api_data.csv')
     weather_df = pd.read_csv('weather.csv')
-    full_history = pd.read_csv('full_history.csv')
+    full_history = pd.read_csv('preprocessed_full_history.csv')
     baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df)
     baseline_result.to_csv('full_baseline_result.csv')
 else:
