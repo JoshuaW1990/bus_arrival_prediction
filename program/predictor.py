@@ -28,15 +28,27 @@ def split_dataset(dataset, feature_list):
 
 
 # Use the linear model for regression
-def build_result_dataset(train_X, train_Y, test_X, test_Y):
+def build_result_dataset(dataset, feature_list):
+    training_set = dataset[dataset.service_date < 20160125].reset_index()
+    test_set = dataset[dataset.service_date >= 20160125].reset_index()
+
+    train_X = training_set.as_matrix(columns=feature_list)
+    train_Y = training_set.as_matrix(columns=['actual_arrival_time'])
+
+    test_X = test_set.as_matrix(columns=feature_list)
+    test_Y = test_set.as_matrix(columns=['actual_arrival_time'])
+
+    if len(train_X) < len(test_X) or len(test_X) == 0:
+        return None
+
     result = pd.DataFrame(test_Y, columns=['actual_arrival_time'])
-    result['baseline'] = test_X[:, 2]
+    result['baseline'] = test_set['baseline_result']
     print 'linear regression'
     model = linear_model.LinearRegression()
     model.fit(train_X, train_Y)
     predict_Y = model.predict(test_X)
-    print 'SVM'
     result['linear_regression'] = predict_Y
+    print 'SVM'
     model = svm.SVR()
     model.fit(train_X, train_Y.ravel())
     predict_Y = model.predict(test_X)
@@ -64,10 +76,12 @@ def run_compare_function(feature_list, dataset, pathname):
     result_list = []
     for name, item in grouped:
         current_dataset = item
-        train_X, train_Y, test_X, test_Y = split_dataset(current_dataset, feature_list)
-        if len(train_X) < len(test_X) or len(test_X) == 0:
+        # train_X, train_Y, test_X, test_Y = split_dataset(current_dataset, feature_list)
+        # if len(train_X) < len(test_X) or len(test_X) == 0:
+        #     continue
+        current_result = build_result_dataset(current_dataset, feature_list)
+        if current_result is None:
             continue
-        current_result = build_result_dataset(train_X, train_Y, test_X, test_Y)
         result_list.append(current_result)
     result = pd.concat(result_list, ignore_index=True)
     result.to_csv(os.path.join(root_path + pathname, 'single_trip_result.csv'))
@@ -75,8 +89,8 @@ def run_compare_function(feature_list, dataset, pathname):
 
     # single route result
     current_dataset = dataset
-    train_X, train_Y, test_X, test_Y = split_dataset(current_dataset, feature_list)
-    result = build_result_dataset(train_X, train_Y, test_X, test_Y)
+    # train_X, train_Y, test_X, test_Y = split_dataset(current_dataset, feature_list)
+    result = build_result_dataset(current_dataset, feature_list)
     result.to_csv(os.path.join(root_path + pathname, 'single_route_result.csv'))
 
 
