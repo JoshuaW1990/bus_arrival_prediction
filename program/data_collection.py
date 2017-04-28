@@ -758,21 +758,19 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
     trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
     trip_route_dict = {}
     route_stop_dict = {}
-    route_stop_dist = route_stop_dist[route_stop_dist.route_id.isin(route_list)]
-    grouped = route_stop_dist.groupby(['route_id', 'shape_id'])
-    for name, single_route_stop_dist in grouped:
-        route, shape_id = name
-        print route
+    grouped = route_stop_dist.groupby(['shape_id'])
+    for shape_id, single_route_stop_dist in grouped:
+        print shape_id
         stop_sequence = list(single_route_stop_dist.stop_id)
         if len(stop_sequence) < 5:
             continue
-        trip_set = set(full_history[(full_history.route_id == route) & (full_history.shape_id == shape_id)].trip_id)
-        current_dict = dict.fromkeys(trip_set, route)
+        trip_set = set(trips[trips.shape_id == shape_id].trip_id)
+        current_dict = dict.fromkeys(trip_set, shape_id)
         trip_route_dict.update(current_dict)
         stop_set = set()
         for i in range(stop_num):
             stop_set.add(stop_sequence[random.randint(2, len(stop_sequence) - 2)])
-        route_stop_dict[route] = stop_set
+        route_stop_dict[shape_id] = stop_set
     history = full_history[
         (full_history.trip_id.isin(trip_route_dict.keys())) & (full_history.service_date.isin(date_list))]
     history_grouped = history.groupby(['service_date', 'trip_id'])
@@ -786,11 +784,12 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
         if print_dict[service_date]:
             print service_date
             print_dict[service_date] = False
-        route_id = trip_route_dict[trip_id]
-        stop_set = [str(int(item)) for item in route_stop_dict[route_id]]
-        stop_sequence = list(route_stop_dist[route_stop_dist.route_id == route_id].stop_id)
+        shape_id = trip_route_dict[trip_id]
+        stop_set = [str(int(item)) for item in route_stop_dict[shape_id]]
+        stop_sequence = list(route_stop_dist[route_stop_dist.shape_id == shape_id].stop_id)
         # filtering the history data: remove the abnormal value
         single_history = filter_single_history(single_history, stop_sequence)
+
         if single_history is None or len(single_history) < 2:
             continue
         for target_stop in stop_set:
@@ -807,8 +806,8 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
                 if tmp_index > target_index:
                     break
                 # If the bus does not pass the target stop, save the remained stops into the stop sequence and calculate the result
-                current_list = generate_single_api(current_time, route_stop_dist, route_id, prev_history, next_history, target_stop, target_index)
-                current_list += [shape_id]
+                route_id = trips[trips.shape_id == shape_id].iloc[0].route_id
+                current_list = generate_single_api(current_time, route_stop_dist, route_id, prev_history, next_history, target_stop, target_index, shape_id)
                 if current_list is not None:
                     result.loc[len(result)] = current_list
     return result
@@ -902,7 +901,7 @@ def generate_api_data(date_list, time_list, route_list, stop_num, route_stop_dis
     # return result
 
 
-def generate_single_api(current_time, route_stop_dist, route_id, prev_history, next_history, stop_id, end_index):
+def generate_single_api(current_time, route_stop_dist, route_id, prev_history, next_history, stop_id, end_index, shape_id):
     """
     Calculate the single record for the api data
     :param current_time: The current time for generating the api data
@@ -941,7 +940,7 @@ def generate_single_api(current_time, route_stop_dist, route_id, prev_history, n
     dist_along_route = calculate_arrival_distance(time_of_day, prev_distance, next_distance, prev_timestamp, next_timestamp)
     # Generate the return list
     # trip_id    vehicle_id    route_id    stop_id    time_of_day    date    dist_along_route
-    result = [single_trip, prev_record['vehicle_id'], route_id, stop_id, str(time_of_day), prev_record['service_date'], dist_along_route]
+    result = [single_trip, prev_record['vehicle_id'], route_id, stop_id, str(time_of_day), prev_record['service_date'], dist_along_route, shape_id]
     return result
 
 
