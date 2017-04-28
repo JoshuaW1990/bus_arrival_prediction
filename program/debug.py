@@ -40,3 +40,4 @@ for route_id, item in grouped:
             shape_id_set.add(shape_id)
 
 final_baseline_result = baseline_result[baseline_result.shape_id.isin(shape_id_set)]
+final_baseline_result.to_csv('full_baseline_result.csv')
