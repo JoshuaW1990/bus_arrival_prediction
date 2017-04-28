@@ -3,7 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 from sklearn.metrics import mean_squared_error as MSE
-import json
+
+
+
 
 # function for graphing
 def compare_model(filename, path):
@@ -18,6 +20,8 @@ def compare_model(filename, path):
     output.plot(kind='scatter', y='SVM', x='actual_arrival_time', xlim=(0, 1500), ylim=(0, 1500), ax=axes[1, 0])
     output.plot(kind='scatter', y='NN', x='actual_arrival_time', xlim=(0, 1500), ylim=(0, 1500), ax=axes[1, 1])
     fig.savefig(path + filename[:-4] + '.png')
+
+
 
 
 def calculate_MSE(filename):
@@ -64,4 +68,3 @@ for dir_name in dir_list:
 #
 # with open('MSE_result.json', 'w') as f:
 #     json.dump(result, f)
-

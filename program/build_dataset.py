@@ -1,5 +1,5 @@
 """
-predict the estimated arrival time based on the 
+predict the estimated arrival time based on the
 """
 
 # import module
@@ -364,12 +364,12 @@ def generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full
     3) Add weather to result:
     4) Add the binary result for the rush hour
 
-    :param api_data: 
-    :param segment_df: 
-    :param route_stop_idst: 
+    :param api_data:
+    :param segment_df:
+    :param route_stop_idst:
     :param trips:
     :param full_history:
-    :return: 
+    :return:
     """
     print "start to export the result of the dataset"
     weather_df['date'] = pd.to_numeric(weather_df['date'])
@@ -463,7 +463,7 @@ def generate_feature_api(single_segment, dist_along_route, target_dist, time_of_
 def obtain_prev_trip(single_segment, stop_id, time_of_day):
     """
     obtain the trip id of the previous trip
-    
+
     Algorithm:
     1) divide the single_segment through groupby([trip id, service date])
     2) for name, item in grouped single history:
@@ -474,11 +474,11 @@ def obtain_prev_trip(single_segment, stop_id, time_of_day):
             a) if arrival_time < time_of_day, compare the bucket tuple (arrival_time, trip id, service date) to obtain the maximum arrival_time
             b) else, continue
     3) return maximum bucket (arrival_time, trip id, service date)
-    
+
     :param single_segment:
     :param stop_id:
-    :param time_of_day: 
-    :return: 
+    :param time_of_day:
+    :return:
     """
     # divide the single_history through groupby([trip id, service date])
     grouped = single_segment.groupby(['trip_id', 'service_date'])
@@ -508,15 +508,15 @@ def obtain_prev_trip(single_segment, stop_id, time_of_day):
 def obtain_time_of_day(single_segment, dist_along_route, single_route_stop_dist):
     """
     obtain the time of day when the bus located at the dist_along_route in baseline3result record
-    
+
     Algorithm:
     1) use the dist_along_route find the corresponding segment pair
     2) calculate the time_of_day according to the dist_along_route within that segment pair
-    
-    :param single_segment: 
-    :param dist_along_route: 
+
+    :param single_segment:
+    :param dist_along_route:
     :param single_route_stop_dist:
-    :return: 
+    :return:
     """
     # use the dist_along_route find the corresponding segment pair
     flag = 0
@@ -577,7 +577,7 @@ def calculate_average_delay(feature_api, segment_df, route_stop_dist, trips):
 def calcualte_prev_arrival_time(filtered_segment, segment_list, dist_along_route, single_route_stop_dist):
     """
     calculate the prev arrival time
-    
+
     Algorithm:
     1) divide the filtered segment by segment start and the segment end
     2) obtain the arrival time in the first segment list:
@@ -587,12 +587,12 @@ def calcualte_prev_arrival_time(filtered_segment, segment_list, dist_along_route
         (4) get the travel duration of the last record
         (5) calculate the arrival time for this segment according to the ratio
     3) add the travel duration of the other segments in the segment list in for loop
-    
-    
-    
-    :param filtered_segment: 
-    :param segment_list: 
-    :return: 
+
+
+
+    :param filtered_segment:
+    :param segment_list:
+    :return:
     """
     prev_arrival_time = 0.0
     filtered_segment['segment_start_dist'] = filtered_segment['segment_start'].apply(lambda x: single_route_stop_dist[single_route_stop_dist.stop_id == x].iloc[0]['dist_along_route'])
@@ -619,7 +619,7 @@ def calcualte_prev_arrival_time(filtered_segment, segment_list, dist_along_route
 def obtain_segment_list(current_route_stop_dist, single_route_stop_dist, stop_id, dist_along_route, stops):
     """
     calcualte the distance according to the gps location
-    
+
     Algorithm:
     1) obtain the gps location of the target stop
     2) add the gps location for all the records of the current_route_stop_dist
@@ -637,12 +637,12 @@ def obtain_segment_list(current_route_stop_dist, single_route_stop_dist, stop_id
             b) start_index, end_index = None, None
         (4) index += 1
     5) return segment list
-    
-    :param current_route_stop_dist: 
-    :param stop_id: 
+
+    :param current_route_stop_dist:
+    :param stop_id:
     :param dist_along_route:
-    :param stops: 
-    :return: 
+    :param stops:
+    :return:
     """
     current_record = stops[stops.stop_id == stop_id].iloc[0]
     target_location = (current_record.stop_lat, current_record.stop_lon)
@@ -705,22 +705,22 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         (7) generate the delay_neighbor_stops
             a) filter the segment by half an hour
             b) divide the filtered segment by trip id
-            c) for name, item in grouped:
-                (a) obtain the specific route id for the item
+            c) for trip_id, single_segment in grouped:
+                (a) obtain the specific route id for the single_segment
                 (b) obtain the route stop dist with the corresponding route id and add the new column indicating the distance between the current stop and the target stop
-                (c) generate the segment list according to the distance by comparing with the target_dist - dist_along_route
+                (c) generate the segment list according to the distance by comparing with the (target_stop_location - current_location)
                 (d) for each segment in stop list:
                     i) generate the feature api list for the corresponding segment
                     ii) use the baseline3 to calculate the estimated arrival time
                     iii) calculate the delay
             d) obtain the average delay
         (6) save the record in the result
-    
-    :param baseline_result: 
-    :param segment_df: 
+
+    :param baseline_result:
+    :param segment_df:
     :param route_stop_dist:
-    :param trips: 
-    :return: 
+    :param trips:
+    :return:
     """
     result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time',  'actual_arrival_time'])
     print "length of the baseline_result.csv file: ", len(baseline_result)

@@ -107,4 +107,3 @@ for feature in complete_feature_list:
     run_compare_function(feature_list, dataset, 'result/1/' + feature + '/')
 
 
-
