@@ -56,7 +56,7 @@ def run_compare_function(feature_list, dataset, pathname):
     root_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/program/'
 
     with open(pathname + 'descrip.txt', 'w') as f:
-        f.wrte(str(feature_list))
+        f.write(str(feature_list))
 
 
     # single trip result
@@ -85,6 +85,12 @@ complete_feature_list = ['weather', 'rush_hour', 'baseline_result', 'delay_curre
 run_compare_function(complete_feature_list[:5], dataset, 'result/orig/')
 
 
+for feature in complete_feature_list:
+    feature_list = list(complete_feature_list)
+    feature_list.remove(feature)
+    if not os.path.exists('./result/1/' + feature):
+        os.mkdir('./result/1/' + feature)
+    run_compare_function(feature_list, dataset, 'result/1/' + feature + '/')
 
 
 
