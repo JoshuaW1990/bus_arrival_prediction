@@ -733,7 +733,6 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         service_date = single_record.get('service_date')
         if service_date == 20160118:
             print "come to debug place"
-        route_id = single_record.get('route_id')
         stop_id = single_record.get('stop_id')
         shape_id = single_record.get('shape_id')
         dist_along_route = single_record.get('dist_along_route')
