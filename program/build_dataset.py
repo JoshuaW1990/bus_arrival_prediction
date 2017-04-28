@@ -735,9 +735,10 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
             print "come to debug place"
         route_id = single_record.get('route_id')
         stop_id = single_record.get('stop_id')
+        shape_id = single_record.get('shape_id')
         dist_along_route = single_record.get('dist_along_route')
         time_of_day = single_record.get('time_of_day')
-        single_route_stop_dist = route_stop_dist[route_stop_dist['route_id'] == route_id]
+        single_route_stop_dist = route_stop_dist[route_stop_dist['shape_id'] == shape_id]
 
         # generate delay of the current trip
         single_segment = segment_df[(segment_df.trip_id == trip_id) & (segment_df.service_date.isin([service_date]))]
@@ -754,7 +755,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         # print delay_current_trip
 
         # generate the delay of the previous trip
-        trip_list = list(trips[trips['route_id'] == route_id]['trip_id'])
+        trip_list = list(trips[trips['shape_id'] == shape_id]['trip_id'])
         single_segment = segment_df[(segment_df.trip_id.isin(trip_list)) & (segment_df.service_date.isin([service_date - 1, service_date]))]
         prev_trip_list = obtain_prev_trip(single_segment, stop_id, time_of_day)
         if prev_trip_list == []:
@@ -855,10 +856,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
 #################################################################################################################
 route_stop_dist = pd.read_csv('route_stop_dist.csv')
 trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
-full_history = pd.read_csv('full_history.csv')
 segment_df = pd.read_csv('full_segment.csv')
-api_data = pd.read_csv('full_api_data.csv')
-weather_df = pd.read_csv('weather.csv')
 stops = pd.read_csv(path + 'data/GTFS/gtfs/stops.txt')
 
 # single_trip = api_data.iloc[0].trip_id
@@ -872,6 +870,9 @@ stops = pd.read_csv(path + 'data/GTFS/gtfs/stops.txt')
 
 file_list = os.listdir('./')
 if 'full_baseline_result.csv' not in file_list:
+    api_data = pd.read_csv('full_api_data.csv')
+    weather_df = pd.read_csv('weather.csv')
+    full_history = pd.read_csv('full_history.csv')
     baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df)
     baseline_result.to_csv('full_baseline_result.csv')
 else:
