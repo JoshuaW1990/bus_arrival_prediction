@@ -53,7 +53,7 @@ from sqlalchemy import create_engine
 
 
 
-engine = create_engine('postgresql://joshuaw:Wj15029054380@localhost:5432/bus_prediction', echo=False)
+engine = create_engine('postgresql://joshuaw:Wj2080989@localhost:5432/bus_prediction', echo=False)
 full_api_data = pd.read_csv('full_api_data.csv')
 full_api_data.drop(['Unnamed: 0'], axis=1, inplace=True)
 full_api_data.to_sql(name='full_api_data', con=engine, if_exists='replace', index_label='id')

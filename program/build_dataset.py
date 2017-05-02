@@ -7,8 +7,11 @@ import pandas as pd
 from geopy.distance import great_circle
 import os
 from datetime import datetime, timedelta
+from sqlalchemy import create_engine
 
 path = '../'
+
+engine = create_engine('postgresql://joshuaw:Wj2080989@localhost:5432/bus_prediction', echo=False)
 
 
 def calculate_arrival_time(stop_dist, prev_dist, next_dist, prev_timestamp, next_timestamp):
@@ -221,7 +224,7 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
     return result
 
 
-def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
+def generate_actual_arrival_time(full_history, segment_df, route_stop_dist, trip_shape_dict):
     """
     Calculate the actual arrival time from the dataset
 
@@ -273,6 +276,7 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
     :param route_stop_dist: dataframe for the route_stop_dist.csv file
     :return: dataframe including both of the estimated arrival time and actual arrival time
     """
+
     result = pd.DataFrame(
         columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route', 'stop_num_from_call', 'estimated_arrival_time', 'actual_arrival_time', 'shape_id'])
     grouped_list = list(segment_df.groupby(['service_date', 'trip_id', 'stop_id']))
@@ -283,7 +287,7 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
         name, item = grouped_list[i]
         service_date, trip_id, target_stop = name
         route_id = item.iloc[0]['route_id']
-        shape_id = item.iloc[0]['shape_id']
+        shape_id = trip_shape_dict[trip_id]['shape_id']
         single_route_stop_dist = route_stop_dist[route_stop_dist.route_id == route_id]
         stop_sequence = list(single_route_stop_dist.stop_id)
         # stop_sequence_str = [str(int(stop_id)) for stop_id in stop_sequence]
@@ -371,12 +375,13 @@ def generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full
     """
     print "start to export the result of the dataset"
     weather_df['date'] = pd.to_numeric(weather_df['date'])
-
-    if trip_list is not None:
-        api_data = api_data[api_data.trip_id.isin(trip_list)]
-    estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
-    estimated_segment_df.to_csv('tmp.csv')
-    result = generate_actual_arrival_time(full_history, estimated_segment_df, route_stop_dist)
+    trip_shape_dict = trips.set_index('trip_id').to_dict(orient='index')
+    # if trip_list is not None:
+    #     api_data = api_data[api_data.trip_id.isin(trip_list)]
+    # estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
+    # estimated_segment_df.to_csv('tmp.csv')
+    estimated_segment_df = pd.read_sql("SELECT * FROM full_api_baseline", con=engine)
+    result = generate_actual_arrival_time(full_history, estimated_segment_df, route_stop_dist, trip_shape_dict)
     result['service_date'] = pd.to_numeric(result['service_date'])
 
     result['weather'] = result['service_date'].apply(lambda x: weather_df[weather_df.date == x].iloc[0]['weather'])
@@ -852,10 +857,14 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
 #################################################################################################################
 #                                    debug section                                                              #
 #################################################################################################################
-route_stop_dist = pd.read_csv('route_stop_dist.csv')
-trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
+# route_stop_dist = pd.read_csv('route_stop_dist.csv')
+# trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
 segment_df = pd.read_csv('full_segment.csv')
-stops = pd.read_csv(path + 'data/GTFS/gtfs/stops.txt')
+# stops = pd.read_csv(path + 'data/GTFS/gtfs/stops.txt')
+route_stop_dist = pd.read_sql("SELECT * FROM route_stop_dist", con=engine)
+trips = pd.read_sql("SELECT * FROM trips", con=engine)
+# segment_df = pd.read_sql("SELECT * FROM full_segment", con=engine)
+stops = pd.read_sql("SELECT * FROM stops", con=engine)
 
 # single_trip = api_data.iloc[0].trip_id
 # print single_trip
@@ -866,15 +875,14 @@ stops = pd.read_csv(path + 'data/GTFS/gtfs/stops.txt')
 # baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df, [single_trip])
 
 
-file_list = os.listdir('./')
-if 'full_baseline_result.csv' not in file_list:
-    api_data = pd.read_csv('full_api_data.csv')
-    weather_df = pd.read_csv('weather.csv')
-    full_history = pd.read_csv('preprocessed_full_history.csv')
-    baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df)
-    baseline_result.to_csv('full_baseline_result.csv')
-else:
-    baseline_result = pd.read_csv('full_baseline_result.csv')
+# api_data = pd.read_csv('full_api_data.csv')
+# weather_df = pd.read_csv('weather.csv')
+api_data = pd.read_sql("SELECT * FROM full_api_data", con=engine)
+weather_df = pd.read_sql("SELECT * FROM weather", con=engine)
+full_history = pd.read_csv('preprocessed_full_history.csv')
+baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df)
+baseline_result.to_sql(name='full_baseline_result', con=engine, if_exists='replace', index_label='id')
+
 
 
 # # Preprocess the full_baseline_result to obtain part of the route ids to test
