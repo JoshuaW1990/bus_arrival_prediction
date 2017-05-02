@@ -155,9 +155,10 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
     :param trips: dataframe for the trips.txt file
     :return: dataframe to store the result including the esitmated arrival time
     """
+    trip_shape_dict = trips.set_index('trip_id').to_dict(orient='index')
     result = pd.DataFrame(
         columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route',
-                 'stop_num_from_call', 'estimated_arrival_time'])
+                 'stop_num_from_call', 'estimated_arrival_time', 'shape_id'])
     print "baseline3 length of api data: ", len(api_data)
     for i in xrange(len(api_data)):
         if i % 1000 == 0:
@@ -165,8 +166,9 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
         # get the variables
         item = api_data.iloc[i]
         trip_id = item.get('trip_id')
+        shape_id = trip_shape_dict[trip_id]['shape_id']
         route_id = trips[trips.trip_id == trip_id].iloc[0].route_id
-        single_route_stop_dist = route_stop_dist[route_stop_dist.route_id == route_id]
+        single_route_stop_dist = route_stop_dist[route_stop_dist.shape_id == shape_id]
         stop_sequence = list(single_route_stop_dist.stop_id)
         target_stop = item.get('stop_id')
         target_index = stop_sequence.index(target_stop)
@@ -176,7 +178,7 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
         service_date = item.get('date')
         # preprocess the segment data according to the trip id and the service date
         segment_data = full_segment_data[(full_segment_data.service_date != service_date) | (full_segment_data.trip_id != trip_id)]
-        trip_list = set(trips[trips.route_id == route_id].trip_id)
+        trip_list = set(trips[trips.shape_id == shape_id].trip_id)
         single_segment_data = segment_data[(segment_data.trip_id.isin(trip_list))]
         grouped = single_segment_data.groupby(['segment_start', 'segment_end'])
         preprocessed_segment_data = grouped['travel_duration'].mean().reset_index()
@@ -220,7 +222,7 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
                                                       next_record)
             total_travel_duration += time_from_stop
         result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, time_of_day, service_date,
-                                   dist_along_route, count + 1, total_travel_duration]
+                                   dist_along_route, count + 1, total_travel_duration, shape_id]
     return result
 
 
@@ -282,13 +284,13 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist, trip
     grouped_list = list(segment_df.groupby(['service_date', 'trip_id', 'stop_id']))
     print 'length of the segment_df is: ', len(grouped_list)
     for i in xrange(len(grouped_list)):
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print i
         name, item = grouped_list[i]
         service_date, trip_id, target_stop = name
         route_id = item.iloc[0]['route_id']
-        shape_id = trip_shape_dict[trip_id]['shape_id']
-        single_route_stop_dist = route_stop_dist[route_stop_dist.route_id == route_id]
+        shape_id = item.iloc[0]['shape_id']
+        single_route_stop_dist = route_stop_dist[route_stop_dist.shape_id == shape_id]
         stop_sequence = list(single_route_stop_dist.stop_id)
         # stop_sequence_str = [str(int(stop_id)) for stop_id in stop_sequence]
         target_index = stop_sequence.index(target_stop)
@@ -314,6 +316,9 @@ def generate_actual_arrival_time(full_history, segment_df, route_stop_dist, trip
         if next_index == len(stop_sequence):
             continue
         next_stop = stop_sequence[next_index]
+        if prev_stop == next_stop:
+            print "error"
+            continue
         prev_record = single_history[single_history.next_stop_id == prev_stop].iloc[-1]
         prev_time = prev_record.get('timestamp')
         prev_time = datetime.strptime(prev_time, '%Y-%m-%dT%H:%M:%SZ')
@@ -375,13 +380,14 @@ def generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full
     """
     print "start to export the result of the dataset"
     weather_df['date'] = pd.to_numeric(weather_df['date'])
-    trip_shape_dict = trips.set_index('trip_id').to_dict(orient='index')
-    # if trip_list is not None:
-    #     api_data = api_data[api_data.trip_id.isin(trip_list)]
-    # estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
-    # estimated_segment_df.to_csv('tmp.csv')
-    estimated_segment_df = pd.read_sql("SELECT * FROM full_api_baseline", con=engine)
-    result = generate_actual_arrival_time(full_history, estimated_segment_df, route_stop_dist, trip_shape_dict)
+    if trip_list is not None:
+        api_data = api_data[api_data.trip_id.isin(trip_list)]
+    print "calcualte the estimated result"
+    estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
+    estimated_segment_df.to_csv('full_api_baseline.csv')
+    # estimated_segment_df = pd.read_sql("SELECT * FROM full_api_baseline", con=engine)
+    print "calcualte the actual result"
+    result = generate_actual_arrival_time(full_history, estimated_segment_df, route_stop_dist)
     result['service_date'] = pd.to_numeric(result['service_date'])
 
     result['weather'] = result['service_date'].apply(lambda x: weather_df[weather_df.date == x].iloc[0]['weather'])
@@ -881,6 +887,7 @@ api_data = pd.read_sql("SELECT * FROM full_api_data", con=engine)
 weather_df = pd.read_sql("SELECT * FROM weather", con=engine)
 full_history = pd.read_csv('preprocessed_full_history.csv')
 baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df)
+baseline_result.to_csv('result.csv')
 baseline_result.to_sql(name='full_baseline_result', con=engine, if_exists='replace', index_label='id')
 
 
