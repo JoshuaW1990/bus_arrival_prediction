@@ -155,6 +155,20 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
     :param trips: dataframe for the trips.txt file
     :return: dataframe to store the result including the esitmated arrival time
     """
+    def helper(preprocessed_segment_data, average_travel_duration, dist_along_route, prev_record, next_record):
+        segment_start = prev_record.get('stop_id')
+        segment_end = next_record.get('stop_id')
+        if segment_start == segment_end:
+            return 0.0
+        distance_stop_stop = next_record.get('dist_along_route') - prev_record.get('dist_along_route')
+        distance_bus_stop = next_record.get('dist_along_route') - dist_along_route
+        ratio = float(distance_bus_stop) / float(distance_stop_stop)
+        assert ratio < 1
+        travel_duration = preprocessed_segment_data.get((segment_start, segment_end), average_travel_duration)
+        time_from_stop = travel_duration * ratio
+        return time_from_stop
+
+
     trip_shape_dict = trips.set_index('trip_id').to_dict(orient='index')
     result = pd.DataFrame(
         columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route',
@@ -181,45 +195,42 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
         trip_list = set(trips[trips.shape_id == shape_id].trip_id)
         single_segment_data = segment_data[(segment_data.trip_id.isin(trip_list))]
         grouped = single_segment_data.groupby(['segment_start', 'segment_end'])
-        preprocessed_segment_data = grouped['travel_duration'].mean().reset_index()
-        average_travel_duration = preprocessed_segment_data['travel_duration'].mean()
+        preprocessed_segment_data = grouped['travel_duration'].mean()
+        average_travel_duration = single_segment_data['travel_duration'].mean()
         # find the segment containing the current location of the api data
-        if dist_along_route >= single_route_stop_dist.iloc[-1].dist_along_route:
-            continue
-        for j in range(1, len(stop_sequence)):
-            if single_route_stop_dist.iloc[j - 1].dist_along_route < dist_along_route < single_route_stop_dist.iloc[j].dist_along_route:
-                prev_record = single_route_stop_dist.iloc[j - 1]
-                next_record = single_route_stop_dist.iloc[j]
-                break
-            elif single_route_stop_dist.iloc[j - 1].dist_along_route == dist_along_route:
-                prev_record = single_route_stop_dist.iloc[j - 1]
-                next_record = prev_record
-                break
-            else:
-                continue
-        next_index = stop_sequence.index(next_record.get('stop_id'))
+        prev_route_stop_dist = single_route_stop_dist[single_route_stop_dist.dist_along_route < dist_along_route]
+        next_route_stop_dist = single_route_stop_dist[single_route_stop_dist.dist_along_route >= dist_along_route]
+        next_index = len(prev_route_stop_dist)
+        # if dist_along_route >= single_route_stop_dist.iloc[-1].dist_along_route:
+        #     continue
+        # for j in range(1, len(stop_sequence)):
+        #     if single_route_stop_dist.iloc[j - 1].dist_along_route < dist_along_route < single_route_stop_dist.iloc[j].dist_along_route:
+        #         prev_record = single_route_stop_dist.iloc[j - 1]
+        #         next_record = single_route_stop_dist.iloc[j]
+        #         break
+        #     elif single_route_stop_dist.iloc[j - 1].dist_along_route == dist_along_route:
+        #         prev_record = single_route_stop_dist.iloc[j - 1]
+        #         next_record = prev_record
+        #         break
+        #     else:
+        #         continue
+        # next_index = stop_sequence.index(next_record.get('stop_id'))
         count = target_index - next_index
         # check how many stops between the current location and the target stop
+        prev_record = prev_route_stop_dist.iloc[-1]
+        next_record = next_route_stop_dist.iloc[0]
         if count < 0:
             continue
         elif count == 0:
-            total_travel_duration = calculate_time_from_stop(preprocessed_segment_data, dist_along_route, prev_record,
-                                                             next_record)
+            total_travel_duration = helper(preprocessed_segment_data, average_travel_duration, dist_along_route, prev_record, next_record)
         else:
             total_travel_duration = 0.0
             for j in xrange(next_index, target_index):
                 segment_start = stop_sequence[j]
                 segment_end = stop_sequence[j + 1]
-                segment_record = preprocessed_segment_data[
-                    (preprocessed_segment_data.segment_start == segment_start) & (
-                        preprocessed_segment_data.segment_end == segment_end)]
-                if len(segment_record) == 0:
-                    single_travel_duration = average_travel_duration
-                else:
-                    single_travel_duration = segment_record.iloc[0]['travel_duration']
+                single_travel_duration = preprocessed_segment_data.get((segment_start, segment_end), average_travel_duration)
                 total_travel_duration += single_travel_duration
-            time_from_stop = calculate_time_from_stop(preprocessed_segment_data, dist_along_route, prev_record,
-                                                      next_record)
+            time_from_stop = helper(preprocessed_segment_data, average_travel_duration, dist_along_route, prev_record, next_record)
             total_travel_duration += time_from_stop
         result.loc[len(result)] = [trip_id, route_id, target_stop, vehicle_id, time_of_day, service_date,
                                    dist_along_route, count + 1, total_travel_duration, shape_id]
