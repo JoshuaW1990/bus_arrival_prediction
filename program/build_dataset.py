@@ -200,6 +200,8 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
         # find the segment containing the current location of the api data
         prev_route_stop_dist = single_route_stop_dist[single_route_stop_dist.dist_along_route < dist_along_route]
         next_route_stop_dist = single_route_stop_dist[single_route_stop_dist.dist_along_route >= dist_along_route]
+        if len(prev_route_stop_dist) == 0 or len(next_route_stop_dist) == 0:
+            continue
         next_index = len(prev_route_stop_dist)
         # if dist_along_route >= single_route_stop_dist.iloc[-1].dist_along_route:
         #     continue
@@ -237,7 +239,7 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
     return result
 
 
-def generate_actual_arrival_time(full_history, segment_df, route_stop_dist, trip_shape_dict):
+def generate_actual_arrival_time(full_history, segment_df, route_stop_dist):
     """
     Calculate the actual arrival time from the dataset
 
@@ -393,10 +395,11 @@ def generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full
     weather_df['date'] = pd.to_numeric(weather_df['date'])
     if trip_list is not None:
         api_data = api_data[api_data.trip_id.isin(trip_list)]
-    print "calcualte the estimated result"
-    estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
-    estimated_segment_df.to_csv('full_api_baseline.csv')
+    # print "calcualte the estimated result"
+    # estimated_segment_df = generate_estimated_arrival_time_baseline3(api_data, segment_df, route_stop_dist, trips)
+    # estimated_segment_df.to_csv('full_api_baseline.csv')
     # estimated_segment_df = pd.read_sql("SELECT * FROM full_api_baseline", con=engine)
+    estimated_segment_df = pd.read_csv('full_api_baseline.csv')
     print "calcualte the actual result"
     result = generate_actual_arrival_time(full_history, estimated_segment_df, route_stop_dist)
     result['service_date'] = pd.to_numeric(result['service_date'])
