@@ -761,7 +761,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         feature_api = generate_feature_api(single_segment, initial_dist, target_dist, current_time_of_day, single_route_stop_dist)
         if feature_api is None:
             continue
-        delay_current_trip, ratio_current_trip = calculate_average_delay(feature_api.iloc[-1], segment_df, route_stop_dist, trips)
+        delay_current_trip, ratio_current_trip = calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips)
         # print delay_current_trip
 
         # generate the delay of the previous trip
@@ -782,7 +782,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         feature_api = generate_feature_api(single_segment, dist_along_route, target_dist, current_time_of_day, single_route_stop_dist)
         if feature_api is None:
             continue
-        delay_prev_trip, ratio_prev_trip = calculate_average_delay(feature_api.iloc[-1], segment_df, route_stop_dist, trips)
+        delay_prev_trip, ratio_prev_trip = calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips)
         # print delay_prev_trip
 
         # generate the prev_arrival_time
