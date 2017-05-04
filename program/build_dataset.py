@@ -203,20 +203,6 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
         if len(prev_route_stop_dist) == 0 or len(next_route_stop_dist) == 0:
             continue
         next_index = len(prev_route_stop_dist)
-        # if dist_along_route >= single_route_stop_dist.iloc[-1].dist_along_route:
-        #     continue
-        # for j in range(1, len(stop_sequence)):
-        #     if single_route_stop_dist.iloc[j - 1].dist_along_route < dist_along_route < single_route_stop_dist.iloc[j].dist_along_route:
-        #         prev_record = single_route_stop_dist.iloc[j - 1]
-        #         next_record = single_route_stop_dist.iloc[j]
-        #         break
-        #     elif single_route_stop_dist.iloc[j - 1].dist_along_route == dist_along_route:
-        #         prev_record = single_route_stop_dist.iloc[j - 1]
-        #         next_record = prev_record
-        #         break
-        #     else:
-        #         continue
-        # next_index = stop_sequence.index(next_record.get('stop_id'))
         count = target_index - next_index
         # check how many stops between the current location and the target stop
         prev_record = prev_route_stop_dist.iloc[-1]
@@ -593,9 +579,10 @@ def calculate_average_delay(feature_api, segment_df, route_stop_dist, trips):
 
     # calculate the delay between the actual arrival time and the estimated arrival time
     result['delay'] = (result['actual_arrival_time'] - result['estimated_arrival_time']) / result['estimated_arrival_time']
+    result['ratio'] = result['actual_arrival_time'] / result['estimated_arrival_time']
 
     # calculate the average delay
-    return result['delay'].mean()
+    return result['delay'].mean(), result['ratio'].mean()
 
 
 def calcualte_prev_arrival_time(filtered_segment, segment_list, dist_along_route, single_route_stop_dist):
@@ -746,10 +733,10 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
     :param trips:
     :return:
     """
-    result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time',  'actual_arrival_time'])
+    result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'ratio_current_trip', 'delay_prev_trip', 'ratio_prev_trip', 'prev_arrival_time',  'actual_arrival_time', 'shape_id', 'stop_id', 'time_of_day', 'dist_along_route'])
     print "length of the baseline_result.csv file: ", len(baseline_result)
     for i in xrange(300, len(baseline_result)):
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print "index is ", i
         # obtain single record, trip id, service date, route id, dist_along_route
         single_record = baseline_result.iloc[i]
@@ -774,7 +761,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         feature_api = generate_feature_api(single_segment, initial_dist, target_dist, current_time_of_day, single_route_stop_dist)
         if feature_api is None:
             continue
-        delay_current_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
+        delay_current_trip, ratio_current_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
         # print delay_current_trip
 
         # generate the delay of the previous trip
@@ -795,7 +782,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
         feature_api = generate_feature_api(single_segment, dist_along_route, target_dist, current_time_of_day, single_route_stop_dist)
         if feature_api is None:
             continue
-        delay_prev_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
+        delay_prev_trip, ratio_prev_trip = calculate_average_delay(feature_api, segment_df, route_stop_dist, trips)
         # print delay_prev_trip
 
         # generate the prev_arrival_time
@@ -860,7 +847,7 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
 
 
         # 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops',
-        result.loc[len(result)] = [trip_id, service_date, single_record.get('weather'), single_record.get('rush_hour'), single_record.get('estimated_arrival_time'), delay_current_trip, delay_prev_trip, prev_arrival_time,   single_record.get('actual_arrival_time')]
+        result.loc[len(result)] = [trip_id, service_date, single_record.get('weather'), single_record.get('rush_hour'), single_record.get('estimated_arrival_time'), delay_current_trip, ratio_current_trip, delay_prev_trip, ratio_current_trip, prev_arrival_time,   single_record.get('actual_arrival_time'), shape_id, stop_id, time_of_day, dist_along_route]
 
     return result
 
@@ -897,13 +884,14 @@ stops = pd.read_sql("SELECT * FROM stops", con=engine)
 
 # api_data = pd.read_csv('full_api_data.csv')
 # weather_df = pd.read_csv('weather.csv')
-api_data = pd.read_sql("SELECT * FROM full_api_data", con=engine)
-weather_df = pd.read_sql("SELECT * FROM weather", con=engine)
-full_history = pd.read_csv('preprocessed_full_history.csv')
-baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df)
-baseline_result.to_csv('result.csv')
-baseline_result.to_sql(name='full_baseline_result', con=engine, if_exists='replace', index_label='id')
+# api_data = pd.read_sql("SELECT * FROM full_api_data", con=engine)
+# weather_df = pd.read_sql("SELECT * FROM weather", con=engine)
+# full_history = pd.read_csv('preprocessed_full_history.csv')
+# baseline_result = generate_complete_dateset(api_data, segment_df, route_stop_dist, trips, full_history, weather_df)
+# baseline_result.to_csv('full_baseline_result.csv')
+# baseline_result.to_sql(name='full_baseline_result', con=engine, if_exists='replace', index_label='id')
 
+baseline_result = pd.read_csv("full_baseline_result.csv")
 
 
 # # Preprocess the full_baseline_result to obtain part of the route ids to test
