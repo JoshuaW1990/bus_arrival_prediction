@@ -173,10 +173,10 @@ def generate_estimated_arrival_time_baseline3(api_data, full_segment_data, route
     result = pd.DataFrame(
         columns=['trip_id', 'route_id', 'stop_id', 'vehicle_id', 'time_of_day', 'service_date', 'dist_along_route',
                  'stop_num_from_call', 'estimated_arrival_time', 'shape_id'])
-    print "baseline3 length of api data: ", len(api_data)
+    # print "baseline3 length of api data: ", len(api_data)
     for i in xrange(len(api_data)):
-        if i % 1000 == 0:
-            print i
+        # if i % 1000 == 0:
+        #     print i
         # get the variables
         item = api_data.iloc[i]
         trip_id = item.get('trip_id')
