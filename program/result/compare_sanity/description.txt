@@ -1,0 +1,5 @@
+random_samples:
+Split the whole dataset into 2 : 1 by random. Around 2/3 of the whole dataset is used for training and the remained part is used as the test set. In this folder, the result is obtained from the test set after training with the training set.
+
+sanity_check:
+Split the whole dataset with the same ratio and methods. Take the 2/3 of the whole dataset for training and testing. The results are stored in this folder.

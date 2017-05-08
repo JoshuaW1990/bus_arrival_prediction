@@ -681,6 +681,14 @@ def obtain_segment_list(current_route_stop_dist, single_route_stop_dist, stop_id
     return segment_list
 
 
+def preprocess_neighboring_trips(full_dataset, route_stop_dist, trips, stops, radium):
+    stop_set = set(full_dataset.stop_id)
+    stop_dict = dict()
+    stop_coord_dict = stops.set_index('stop_id').to_dict(orient='index')
+    for stop in stop_set:
+
+
+
 def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops):
     """
     Build the dataset for regression algorithms
@@ -902,7 +910,7 @@ baseline_result = pd.read_csv("full_baseline_result.csv")
 # baseline_result = baseline_result[baseline_result.route_id.isin(route_filter_list)]
 
 # Preprocess the full_baseline_result to remove the first day of the baseline_result data to avoid error
-baseline_result = baseline_result[baseline_result.service_date > 20160104]
-
-dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
-dataset.to_csv('full_dataset.csv')
+# baseline_result = baseline_result[baseline_result.service_date > 20160104]
+#
+# dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
+# dataset.to_csv('full_dataset.csv')
