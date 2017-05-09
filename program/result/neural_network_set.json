@@ -1,7 +1,6 @@
-select Neural Network setting:
 {
   "activation function": {
-    "solver": "default"
+    "solver": "default",
     "order": {
       "NN1": "identity",
       "NN2": "logistic",
@@ -31,15 +30,3 @@ select Neural Network setting:
     }
   }
 }
-
-select set
-activation: default(relu)
-solver: lbfgs
-
-
-compare the test result and the sanity check result
-
-
-
-
-
