@@ -185,10 +185,11 @@ def single_shape_learning(full_dataset):
 
     grouped = full_dataset.groupby(['shape_id'])
     ratio_result_list = []
+    ratio_result = None
     for name, item in grouped:
-        # print "generate the result for ", name
+        print "generate the result for ", name
         X_train, X_test, output_train, output_test = split_dataset(item)
-        if len(X_test) == 0:
+        if len(X_test) == 0 or len(X_train) == 0:
             continue
         y_train = output_train[0]
         y_test = output_test[0]
@@ -205,7 +206,8 @@ def single_shape_learning(full_dataset):
         output_test_list.append(output_test)
         y_test_list.append(y_test)
 
-    ratio_result = pd.concat(ratio_result_list, ignore_index=True)
+    if ratio_result_list != []:
+        ratio_result = pd.concat(ratio_result_list, ignore_index=True)
     return ratio_result, X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list
 
 
@@ -274,6 +276,8 @@ for count in range(0, len(dataset), len(dataset) / 11):
     shape_set = set(item.shape_id)
     # print set(item.shape_id)
     ratio_result, X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list = single_shape_learning(item)
+    if ratio_result is None:
+        continue
     ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
     time_result, mse_time, ratio_result, mse_ratio = check_performance(output_test_list, ratio_result)
     mse_time_result.loc[len(mse_time_result)] = [mse_time['baseline'], mse_time['single_linear_regression'], mse_time['single_SVM'], mse_time['single_NN'], mse_time['single_GP'], mse_time['MTL_GP'], mse_time['multiple_linear_regression'], mse_time['multiple_SVM'], mse_time['multiple_NN'], mse_time['multiple_GP'], len(item), len(shape_set)]

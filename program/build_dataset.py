@@ -8,6 +8,7 @@ from geopy.distance import great_circle
 import os
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
+import csv
 
 path = '../'
 
@@ -681,15 +682,7 @@ def obtain_segment_list(current_route_stop_dist, single_route_stop_dist, stop_id
     return segment_list
 
 
-def preprocess_neighboring_trips(full_dataset, route_stop_dist, trips, stops, radium):
-    stop_set = set(full_dataset.stop_id)
-    stop_dict = dict()
-    stop_coord_dict = stops.set_index('stop_id').to_dict(orient='index')
-    for stop in stop_set:
-
-
-
-def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops):
+def preprocess_dataset(total_baseline_result, segment_df, route_stop_dist, trips, stops):
     """
     Build the dataset for regression algorithms
 
@@ -742,122 +735,140 @@ def preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stop
     :return:
     """
     result = pd.DataFrame(columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'ratio_current_trip', 'delay_prev_trip', 'ratio_prev_trip', 'prev_arrival_time',  'actual_arrival_time', 'shape_id', 'stop_id', 'time_of_day', 'dist_along_route'])
-    print "length of the baseline_result.csv file: ", len(baseline_result)
-    for i in xrange(len(baseline_result)):
-        if i % 1000 == 0:
-            print "index is ", i
-        # obtain single record, trip id, service date, route id, dist_along_route
-        single_record = baseline_result.iloc[i]
-        trip_id = single_record.get('trip_id')
-        service_date = single_record.get('service_date')
-        if service_date == 20160118:
-            print "come to debug place"
-        stop_id = single_record.get('stop_id')
-        shape_id = single_record.get('shape_id')
-        dist_along_route = single_record.get('dist_along_route')
-        time_of_day = single_record.get('time_of_day')
-        single_route_stop_dist = route_stop_dist[route_stop_dist['shape_id'] == shape_id]
+    result.to_csv('full_dataset.csv')
+    # row = ['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'ratio_current_trip', 'delay_prev_trip', 'ratio_prev_trip', 'prev_arrival_time',  'actual_arrival_time', 'shape_id', 'stop_id', 'time_of_day', 'dist_along_route']
+    # with open('full_dataset.csv', 'w') as f:
+    #     writer = csv.writer(f)
+    #     writer.writerow(row)
+    grouped = total_baseline_result.groupby(['route_id'])
+    result_list = []
+    for route_id, baseline_result in grouped:
+        print "length of the baseline_result.csv file: ", len(baseline_result)
+        result = pd.DataFrame(
+            columns=['trip_id', 'service_date', 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip',
+                     'ratio_current_trip', 'delay_prev_trip', 'ratio_prev_trip', 'prev_arrival_time',
+                     'actual_arrival_time', 'shape_id', 'stop_id', 'time_of_day', 'dist_along_route'])
+        for i in xrange(len(baseline_result)):
+            if i % 100 == 0:
+                print "index is ", i
+            # obtain single record, trip id, service date, route id, dist_along_route
+            single_record = baseline_result.iloc[i]
+            trip_id = single_record.get('trip_id')
+            service_date = single_record.get('service_date')
+            if service_date == 20160118:
+                print "come to debug place"
+            stop_id = single_record.get('stop_id')
+            shape_id = single_record.get('shape_id')
+            dist_along_route = single_record.get('dist_along_route')
+            time_of_day = single_record.get('time_of_day')
+            single_route_stop_dist = route_stop_dist[route_stop_dist['shape_id'] == shape_id]
 
-        # generate delay of the current trip
-        single_segment = segment_df[(segment_df.trip_id == trip_id) & (segment_df.service_date.isin([service_date]))]
-        single_segment = single_segment[single_segment['timestamp'] <= time_of_day]
-        if len(single_segment) == 0:
-            continue
-        current_time_of_day = single_segment.iloc[0]['timestamp']
-        target_dist = dist_along_route
-        initial_dist = single_route_stop_dist[single_route_stop_dist['stop_id'] == single_segment.iloc[0]['segment_start']].iloc[0]['dist_along_route']
-        feature_api = generate_feature_api(single_segment, initial_dist, target_dist, current_time_of_day, single_route_stop_dist)
-        if feature_api is None:
-            continue
-        delay_current_trip, ratio_current_trip = calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips)
-        # print delay_current_trip
+            # generate delay of the current trip
+            single_segment = segment_df[(segment_df.trip_id == trip_id) & (segment_df.service_date.isin([service_date]))]
+            single_segment = single_segment[single_segment['timestamp'] <= time_of_day]
+            if len(single_segment) == 0:
+                continue
+            current_time_of_day = single_segment.iloc[0]['timestamp']
+            target_dist = dist_along_route
+            initial_dist = single_route_stop_dist[single_route_stop_dist['stop_id'] == single_segment.iloc[0]['segment_start']].iloc[0]['dist_along_route']
+            feature_api = generate_feature_api(single_segment, initial_dist, target_dist, current_time_of_day, single_route_stop_dist)
+            if feature_api is None:
+                continue
+            delay_current_trip, ratio_current_trip = calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips)
+            # print delay_current_trip
 
-        # generate the delay of the previous trip
-        trip_list = list(trips[trips['shape_id'] == shape_id]['trip_id'])
-        single_segment = segment_df[(segment_df.trip_id.isin(trip_list)) & (segment_df.service_date.isin([service_date - 1, service_date]))]
-        prev_trip_list = obtain_prev_trip(single_segment, stop_id, time_of_day)
-        if prev_trip_list == []:
-            continue
-        current_segment = single_segment
-        for prev_trip_tuple in prev_trip_list:
-            single_segment = current_segment[(current_segment['trip_id'] == prev_trip_tuple[1]) & (current_segment['service_date'] == prev_trip_tuple[2])]
-            current_time_of_day = obtain_time_of_day(single_segment, dist_along_route, single_route_stop_dist)
-            if current_time_of_day is not None:
-                break
-        if current_time_of_day is None:
-            continue
-        target_dist = single_route_stop_dist[single_route_stop_dist['stop_id'] == stop_id].iloc[0]['dist_along_route']
-        feature_api = generate_feature_api(single_segment, dist_along_route, target_dist, current_time_of_day, single_route_stop_dist)
-        if feature_api is None:
-            continue
-        delay_prev_trip, ratio_prev_trip = calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips)
-        # print delay_prev_trip
+            # generate the delay of the previous trip
+            trip_list = list(trips[trips['shape_id'] == shape_id]['trip_id'])
+            single_segment = segment_df[(segment_df.trip_id.isin(trip_list)) & (segment_df.service_date.isin([service_date - 1, service_date]))]
+            prev_trip_list = obtain_prev_trip(single_segment, stop_id, time_of_day)
+            if prev_trip_list == []:
+                continue
+            current_segment = single_segment
+            for prev_trip_tuple in prev_trip_list:
+                single_segment = current_segment[(current_segment['trip_id'] == prev_trip_tuple[1]) & (current_segment['service_date'] == prev_trip_tuple[2])]
+                current_time_of_day = obtain_time_of_day(single_segment, dist_along_route, single_route_stop_dist)
+                if current_time_of_day is not None:
+                    break
+            if current_time_of_day is None:
+                continue
+            target_dist = single_route_stop_dist[single_route_stop_dist['stop_id'] == stop_id].iloc[0]['dist_along_route']
+            feature_api = generate_feature_api(single_segment, dist_along_route, target_dist, current_time_of_day, single_route_stop_dist)
+            if feature_api is None:
+                continue
+            delay_prev_trip, ratio_prev_trip = calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips)
+            # print delay_prev_trip
 
-        # generate the prev_arrival_time
-        # generate the segment list between the dist_along_route and the target stop
-        index = 0
-        while index < len(single_route_stop_dist):
-            if single_route_stop_dist.iloc[index]['dist_along_route'] >= dist_along_route:
-                break
-            index += 1
-        if index == len(single_route_stop_dist):
-            continue
-        start_index = index - 1
-        while index < len(single_route_stop_dist):
-            if single_route_stop_dist.iloc[index]['stop_id'] == stop_id:
-                break
-            index += 1
-        if index == len(single_route_stop_dist):
-            continue
-        end_index = index + 1
-        filtered_stop_sequence = list(single_route_stop_dist.stop_id)[start_index:end_index]
-        segment_list = [(filtered_stop_sequence[_ - 1], filtered_stop_sequence[_]) for _ in range(1, len(filtered_stop_sequence))]
-        # calculate the prev_arrival_time
-        filtered_segment = segment_df[segment_df.service_date.isin([service_date - 1, service_date])]
-        filtered_segment = filtered_segment[(filtered_segment.segment_start.isin(filtered_stop_sequence[:-1])) & (filtered_segment.segment_end.isin(filtered_stop_sequence[1:]))]
-        filtered_segment = filtered_segment[filtered_segment['timestamp'].apply(lambda x: datetime.strptime(x[:19], '%Y-%m-%d %H:%M:%S') <= datetime.strptime(time_of_day, '%Y-%m-%d %H:%M:%S'))]
-        prev_arrival_time = calcualte_prev_arrival_time(filtered_segment, segment_list, dist_along_route, single_route_stop_dist)
-        # print "previous arrival time: ", prev_arrival_time
-        # print prev_arrival_time
+            # generate the prev_arrival_time
+            # generate the segment list between the dist_along_route and the target stop
+            index = 0
+            while index < len(single_route_stop_dist):
+                if single_route_stop_dist.iloc[index]['dist_along_route'] >= dist_along_route:
+                    break
+                index += 1
+            if index == len(single_route_stop_dist):
+                continue
+            start_index = index - 1
+            while index < len(single_route_stop_dist):
+                if single_route_stop_dist.iloc[index]['stop_id'] == stop_id:
+                    break
+                index += 1
+            if index == len(single_route_stop_dist):
+                continue
+            end_index = index + 1
+            filtered_stop_sequence = list(single_route_stop_dist.stop_id)[start_index:end_index]
+            segment_list = [(filtered_stop_sequence[_ - 1], filtered_stop_sequence[_]) for _ in range(1, len(filtered_stop_sequence))]
+            # calculate the prev_arrival_time
+            filtered_segment = segment_df[segment_df.service_date.isin([service_date - 1, service_date])]
+            filtered_segment = filtered_segment[(filtered_segment.segment_start.isin(filtered_stop_sequence[:-1])) & (filtered_segment.segment_end.isin(filtered_stop_sequence[1:]))]
+            filtered_segment = filtered_segment[filtered_segment['timestamp'].apply(lambda x: datetime.strptime(x[:19], '%Y-%m-%d %H:%M:%S') <= datetime.strptime(time_of_day, '%Y-%m-%d %H:%M:%S'))]
+            prev_arrival_time = calcualte_prev_arrival_time(filtered_segment, segment_list, dist_along_route, single_route_stop_dist)
+            # print "previous arrival time: ", prev_arrival_time
+            # print prev_arrival_time
 
-        # # generate the delay_neighbor_stops
-        # tmp_time_of_day = str(datetime.strptime(time_of_day, '%Y-%m-%d %H:%M:%S') - timedelta(0, 1800))
-        # filtered_segment = segment_df[(segment_df.timestamp <= time_of_day) & (segment_df.timestamp >= tmp_time_of_day)]
-        # if len(filtered_segment) == 0:
-        #     continue
-        # grouped = filtered_segment.groupby(['trip_id'])
-        # delay_neighbor_stops_list = []
-        # for name, item in grouped:
-        #     current_trip_id = name
-        #     current_route_id = trips[trips.trip_id == current_trip_id].iloc[0]['route_id']
-        #     current_route_stop_dist = route_stop_dist[route_stop_dist.route_id == current_route_id]
-        #     segment_list = obtain_segment_list(current_route_stop_dist, single_route_stop_dist, stop_id, dist_along_route, stops)
-        #     if not segment_list:
-        #         continue
-        #     for segment in segment_list:
-        #         start_index, end_index = segment
-        #         current_stop_list = list(current_route_stop_dist[start_index:end_index + 1]['stop_id'])
-        #         single_segment = item[(item.segment_start.isin(current_stop_list[:-1])) & (item.segment_end.isin(current_stop_list[1:]))]
-        #         if len(single_segment) == 0:
-        #             continue
-        #         current_time_of_day = single_segment.iloc[0]['timestamp']
-        #         target_dist = current_route_stop_dist[current_route_stop_dist['stop_id'] == single_segment.iloc[-1]['segment_end']].iloc[0]['dist_along_route']
-        #         initial_dist = current_route_stop_dist[current_route_stop_dist['stop_id'] == single_segment.iloc[0]['segment_start']].iloc[0]['dist_along_route']
-        #         feature_api = generate_feature_api(single_segment, initial_dist, target_dist, current_time_of_day, current_route_stop_dist)
-        #         if feature_api is None:
-        #             continue
-        #         delay_neighbor_stops_list.append(calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips))
-        # if len(delay_neighbor_stops_list) == 0:
-        #     delay_neighbor_stops = 0.0
-        # else:
-        #     delay_neighbor_stops = sum(delay_neighbor_stops_list) / float(len(delay_neighbor_stops_list))
-        # # print delay_neighbor_stops
+            # # generate the delay_neighbor_stops
+            # tmp_time_of_day = str(datetime.strptime(time_of_day, '%Y-%m-%d %H:%M:%S') - timedelta(0, 1800))
+            # filtered_segment = segment_df[(segment_df.timestamp <= time_of_day) & (segment_df.timestamp >= tmp_time_of_day)]
+            # if len(filtered_segment) == 0:
+            #     continue
+            # grouped = filtered_segment.groupby(['trip_id'])
+            # delay_neighbor_stops_list = []
+            # for name, item in grouped:
+            #     current_trip_id = name
+            #     current_route_id = trips[trips.trip_id == current_trip_id].iloc[0]['route_id']
+            #     current_route_stop_dist = route_stop_dist[route_stop_dist.route_id == current_route_id]
+            #     segment_list = obtain_segment_list(current_route_stop_dist, single_route_stop_dist, stop_id, dist_along_route, stops)
+            #     if not segment_list:
+            #         continue
+            #     for segment in segment_list:
+            #         start_index, end_index = segment
+            #         current_stop_list = list(current_route_stop_dist[start_index:end_index + 1]['stop_id'])
+            #         single_segment = item[(item.segment_start.isin(current_stop_list[:-1])) & (item.segment_end.isin(current_stop_list[1:]))]
+            #         if len(single_segment) == 0:
+            #             continue
+            #         current_time_of_day = single_segment.iloc[0]['timestamp']
+            #         target_dist = current_route_stop_dist[current_route_stop_dist['stop_id'] == single_segment.iloc[-1]['segment_end']].iloc[0]['dist_along_route']
+            #         initial_dist = current_route_stop_dist[current_route_stop_dist['stop_id'] == single_segment.iloc[0]['segment_start']].iloc[0]['dist_along_route']
+            #         feature_api = generate_feature_api(single_segment, initial_dist, target_dist, current_time_of_day, current_route_stop_dist)
+            #         if feature_api is None:
+            #             continue
+            #         delay_neighbor_stops_list.append(calculate_average_delay(feature_api[-1:], segment_df, route_stop_dist, trips))
+            # if len(delay_neighbor_stops_list) == 0:
+            #     delay_neighbor_stops = 0.0
+            # else:
+            #     delay_neighbor_stops = sum(delay_neighbor_stops_list) / float(len(delay_neighbor_stops_list))
+            # # print delay_neighbor_stops
 
 
-        # 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops',
-        result.loc[len(result)] = [trip_id, service_date, single_record.get('weather'), single_record.get('rush_hour'), single_record.get('estimated_arrival_time'), delay_current_trip, ratio_current_trip, delay_prev_trip, ratio_current_trip, prev_arrival_time,   single_record.get('actual_arrival_time'), shape_id, stop_id, time_of_day, dist_along_route]
-
-    return result
+            # 'weather', 'rush_hour', 'baseline_result', 'delay_current_trip', 'delay_prev_trip', 'prev_arrival_time', 'delay_neighbor_stops',
+            single_result = [trip_id, service_date, single_record.get('weather'), single_record.get('rush_hour'), single_record.get('estimated_arrival_time'), delay_current_trip, ratio_current_trip, delay_prev_trip, ratio_current_trip, prev_arrival_time,   single_record.get('actual_arrival_time'), shape_id, stop_id, time_of_day, dist_along_route]
+            result.loc[len(result)] = single_result
+            # with open('full_dataset.csv', 'a') as f:
+            #     writer = csv.writer(f)
+            #     writer.writerow(single_result)
+        with open('full_dataset.csv', 'a') as f:
+            result.to_csv(f, header=False)
+        result_list.append(result)
+    return pd.concat(result_list, ignore_index=True)
 
 
 
@@ -910,7 +921,7 @@ baseline_result = pd.read_csv("full_baseline_result.csv")
 # baseline_result = baseline_result[baseline_result.route_id.isin(route_filter_list)]
 
 # Preprocess the full_baseline_result to remove the first day of the baseline_result data to avoid error
-# baseline_result = baseline_result[baseline_result.service_date > 20160104]
-#
-# dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
-# dataset.to_csv('full_dataset.csv')
+baseline_result = baseline_result[baseline_result.service_date > 20160104]
+
+dataset = preprocess_dataset(baseline_result, segment_df, route_stop_dist, trips, stops)
+dataset.to_csv('full_dataset1.csv')
