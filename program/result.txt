@@ -40,6 +40,9 @@ solver: lbfgs
 compare the test result and the sanity check result
 
 
-
+5
+set(['S480057', 'S480055', 'S510082', 'S420059', 'S510058', 'S440079'])
+6
+set(['S480057', 'S480055', 'S510082', 'S510083', 'S420059', 'S510058', 'S440079'])
 
 
