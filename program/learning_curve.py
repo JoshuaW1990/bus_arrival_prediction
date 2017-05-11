@@ -188,6 +188,8 @@ def single_shape_learning(full_dataset):
     for name, item in grouped:
         # print "generate the result for ", name
         X_train, X_test, output_train, output_test = split_dataset(item)
+        if len(X_test) == 0:
+            continue
         y_train = output_train[0]
         y_test = output_test[0]
 
