@@ -127,7 +127,8 @@ def multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_lis
     model.optimize('bfgs')
     X_test = np.concatenate(X_test_list)
     X_test = np.hstack((X_test, np.ones((len(X_test), 1))))
-    noise_dict = {'output_index': X_test[:, -1:].astype(int)}
+    # X_test = np.hstack((X_test, np.ones_like(X_test)))
+    noise_dict = {'output_index': X_test[:, 6:].astype(int)}
     y_pred, y_var = model.predict(X_test, Y_metadata=noise_dict)
     ratio_result['MTL_GP'] = y_pred
 
@@ -262,7 +263,10 @@ for bin_number, item in enumerate(dataset_list[5:]):
         item)
     if ratio_result is None:
         continue
-    ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
+    try:
+        ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
+    except:
+        continue
     time_result, mse_time, ratio_result, mse_ratio = check_performance(output_test_list, ratio_result)
     mse_time_result.loc[len(mse_time_result)] = [mse_time['baseline'], mse_time['single_linear_regression'],
                                                  mse_time['single_SVM'], mse_time['single_NN'], mse_time['single_GP'],
