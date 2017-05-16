@@ -37,7 +37,7 @@ def generate_dataset_list(full_dataset):
     :return: 
     """
     dataset_list = []
-    for time in range(0, 6000, 500):
+    for time in range(0, 6000, 1000):
         sm_time = time
         bg_time = time + 500
         current_dataset = full_dataset[(full_dataset['actual_arrival_time'] >= sm_time) & (full_dataset['actual_arrival_time'] < bg_time)]
