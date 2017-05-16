@@ -1,12 +1,5 @@
 """
-This file is used to show the learning curve:
-1. add by number of samples
-2. add by shape
-
-It should generate three different result:
-1. MTL-GP
-2. single shape learning (NoMTL)
-3. multiple shape learning (NoMTL)
+Divide the dataset according to different chart for 
 """
 
 # import the modules
@@ -19,6 +12,7 @@ from sklearn.metrics import mean_squared_error as MSE
 import json
 import matplotlib.pyplot as plt
 import GPy
+
 
 
 def preprocess_dataset(origin_dataset):
@@ -36,23 +30,6 @@ def preprocess_dataset(origin_dataset):
     full_dataset['actual_arrival_time'] = origin_dataset['actual_arrival_time']
     return full_dataset
 
-
-def split_dataset(dataset):
-    X = dataset.as_matrix(columns=['weather', 'rush_hour', 'baseline_result', 'ratio_current_trip', 'ratio_prev_trip', 'prev_arrival_time'])
-    y = dataset.as_matrix(columns=['ratio_baseline', 'baseline_result', 'actual_arrival_time'])
-
-    # normalization
-    X_normalized = preprocessing.normalize(X, norm='l2')
-
-    # split the dataset
-    X_train, X_test, output_train, output_test = train_test_split(X_normalized, y, test_size=0.33, random_state=42)
-
-    output_train = output_train.transpose()
-    output_test = output_test.transpose()
-
-    return X_train, X_test, output_train, output_test
-
-
 def generate_dataset_list(full_dataset):
     """
     Generate the list of dataframe for testing
@@ -60,46 +37,38 @@ def generate_dataset_list(full_dataset):
     :return: 
     """
     dataset_list = []
-    grouped = full_dataset.groupby(['shape_id'])
-    for name, item in grouped:
-        # print "generate the result for ", name
-        if dataset_list == []:
-            dataset_list.append(item)
-        else:
-            current_dataset = pd.concat([dataset_list[-1], item], ignore_index=True)
-            dataset_list.append(current_dataset)
+    for time in range(0, 6000, 500):
+        sm_time = time
+        bg_time = time + 500
+        current_dataset = full_dataset[(full_dataset['actual_arrival_time'] >= sm_time) & (full_dataset['actual_arrival_time'] < bg_time)]
+        dataset_list.append(current_dataset)
     return dataset_list
 
 
-# def generate_X_Y_list(full_dataset):
-#     """
-#     Genereate the X_list and Y_list for the MTL GP learning
-#     :return:
-#     """
-#     X_train_list = []
-#     X_test_list = []
-#     output_train_list = []
-#     output_test_list = []
-#     y_train_list = []
-#     y_test_list = []
-#
-#     grouped = full_dataset.groupby(['shape_id'])
-#     for name, item in grouped:
-#         X_train, X_test, output_train, output_test = split_dataset(item)
-#
-#         y_train = output_train[0]
-#         y_test = output_test[0]
-#
-#         X_train_list.append(X_train)
-#         output_train_list.append(output_train)
-#         y_train_list.append(y_train.reshape(len(y_train), 1))
-#
-#         X_test_list.append(X_test)
-#         output_test_list.append(output_test)
-#         y_test_list.append(y_test)
-#
-#     return X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list
 
+def split_dataset(dataset, fold, total_fold):
+    total_count = len(dataset)
+    fold_count = int(total_count / total_fold)
+    start_index = fold * fold_count
+    end_index = (fold + 1) * fold_count
+
+    X = dataset.as_matrix(columns=['weather', 'rush_hour', 'baseline_result', 'ratio_current_trip', 'ratio_prev_trip', 'prev_arrival_time'])
+    y = dataset.as_matrix(columns=['ratio_baseline', 'baseline_result', 'actual_arrival_time'])
+
+    # normalization
+    X_normalized = preprocessing.normalize(X, norm='l2')
+
+    # split the dataset
+    X_train = np.concatenate([X_normalized[:start_index, :], X_normalized[end_index:, :]])
+    X_test = X_normalized[start_index:end_index, :]
+
+    output_train = np.concatenate([y[:start_index, :], y[end_index:, :]])
+    output_test = y[start_index:end_index, :]
+
+    output_train = output_train.transpose()
+    output_test = output_test.transpose()
+
+    return X_train, X_test, output_train, output_test
 
 
 def generate_ratio_result(X_train, X_test, y_train, y_test):
@@ -174,7 +143,7 @@ def multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_lis
 
     return ratio_result
 
-def single_shape_learning(full_dataset):
+def single_shape_learning(full_dataset, fold, total_fold):
 
     X_train_list = []
     X_test_list = []
@@ -188,7 +157,7 @@ def single_shape_learning(full_dataset):
     ratio_result = None
     for name, item in grouped:
         print "generate the result for ", name
-        X_train, X_test, output_train, output_test = split_dataset(item)
+        X_train, X_test, output_train, output_test = split_dataset(item, fold, total_fold)
         if len(X_test) == 0 or len(X_train) == 0:
             continue
         y_train = output_train[0]
@@ -262,20 +231,17 @@ origin_dataset = pd.read_csv('full_dataset.csv')
 
 dataset = preprocess_dataset(origin_dataset)
 
-# dataset_list = generate_dataset_list(dataset)
-
-mse_time_result = pd.DataFrame(columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP', 'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'sample_size', 'num_shapes'])
-mse_ratio_result = pd.DataFrame(columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP', 'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'sample_size', 'num_shapes'])
-# for index, item in enumerate(dataset_list):
-
 total_fold = 5
 dataset = dataset.sample(frac=1).reset_index(drop=True)
-for count in range(0, len(dataset), len(dataset) / 11):
-    if count <= 0:
-        continue
-    print count
-    item = dataset[:count]
-    shape_set = set(item.shape_id)
+
+
+mse_time_result = pd.DataFrame(columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP', 'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'bin_number'])
+mse_ratio_result = pd.DataFrame(columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP', 'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'bin_number'])
+
+dataset_list = generate_dataset_list(dataset)
+
+for bin_number, item in enumerate(dataset_list):
+    print bin_number
     current_mse_time_result = pd.DataFrame(
         columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP',
                  'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'bin_number'])
@@ -291,35 +257,15 @@ for count in range(0, len(dataset), len(dataset) / 11):
         ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
         time_result, mse_time, ratio_result, mse_ratio = check_performance(output_test_list, ratio_result)
         current_mse_time_result.loc[len(mse_time_result)] = [mse_time['baseline'], mse_time['single_linear_regression'],
-                                                             mse_time['single_SVM'], mse_time['single_NN'],
-                                                             mse_time['single_GP'], mse_time['MTL_GP'],
-                                                             mse_time['multiple_linear_regression'],
-                                                             mse_time['multiple_SVM'], mse_time['multiple_NN'],
-                                                             mse_time['multiple_GP'], len(item), len(shape_set)]
+                                                     mse_time['single_SVM'], mse_time['single_NN'],
+                                                     mse_time['single_GP'], mse_time['MTL_GP'],
+                                                     mse_time['multiple_linear_regression'], mse_time['multiple_SVM'],
+                                                     mse_time['multiple_NN'], mse_time['multiple_GP'], bin_number]
         current_mse_ratio_result.loc[len(mse_ratio_result)] = [mse_ratio['ratio_baseline'],
-                                                               mse_ratio['single_linear_regression'],
-                                                               mse_ratio['single_SVM'], mse_ratio['single_NN'],
-                                                               mse_ratio['single_GP'], mse_ratio['MTL_GP'],
-                                                               mse_ratio['multiple_linear_regression'],
-                                                               mse_ratio['multiple_SVM'], mse_ratio['multiple_NN'],
-                                                               mse_ratio['multiple_GP'], len(item), len(shape_set)]
+                                                       mse_ratio['single_linear_regression'], mse_ratio['single_SVM'],
+                                                       mse_ratio['single_NN'], mse_ratio['single_GP'],
+                                                       mse_ratio['MTL_GP'], mse_ratio['multiple_linear_regression'],
+                                                       mse_ratio['multiple_SVM'], mse_ratio['multiple_NN'],
+                                                       mse_ratio['multiple_GP'], bin_number]
     mse_time_result.loc[len(mse_time_result)] = current_mse_time_result.mean()
     mse_ratio_result.loc[len(mse_ratio_result)] = current_mse_ratio_result.mean()
-
-    #
-    # # print set(item.shape_id)
-    # ratio_result, X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list = single_shape_learning(item)
-    # if ratio_result is None:
-    #     continue
-    # ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
-    # time_result, mse_time, ratio_result, mse_ratio = check_performance(output_test_list, ratio_result)
-    # mse_time_result.loc[len(mse_time_result)] = [mse_time['baseline'], mse_time['single_linear_regression'], mse_time['single_SVM'], mse_time['single_NN'], mse_time['single_GP'], mse_time['MTL_GP'], mse_time['multiple_linear_regression'], mse_time['multiple_SVM'], mse_time['multiple_NN'], mse_time['multiple_GP'], len(item), len(shape_set)]
-    # mse_ratio_result.loc[len(mse_ratio_result)] = [mse_ratio['ratio_baseline'], mse_ratio['single_linear_regression'], mse_ratio['single_SVM'], mse_ratio['single_NN'], mse_ratio['single_GP'], mse_ratio['MTL_GP'], mse_ratio['multiple_linear_regression'], mse_ratio['multiple_SVM'], mse_ratio['multiple_NN'], mse_ratio['multiple_GP'], len(item), len(shape_set)]
-
-
-mse_time_result.to_csv('result/learning_curve/final_mse_time_result.csv')
-mse_ratio_result.to_csv('result/learning_curve/final_mse_ratio_result.csv')
-
-
-
-
