@@ -276,45 +276,45 @@ for count in range(0, len(dataset), len(dataset) / 11):
     print count
     item = dataset[:count]
     shape_set = set(item.shape_id)
-    current_mse_time_result = pd.DataFrame(
-        columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP',
-                 'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'bin_number'])
-    current_mse_ratio_result = pd.DataFrame(
-        columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP',
-                 'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'bin_number'])
-    for fold in range(total_fold):
-        print fold
-        ratio_result, X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list = single_shape_learning(
-            dataset, fold, total_fold)
-        if ratio_result is None:
-            continue
-        ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
-        time_result, mse_time, ratio_result, mse_ratio = check_performance(output_test_list, ratio_result)
-        current_mse_time_result.loc[len(mse_time_result)] = [mse_time['baseline'], mse_time['single_linear_regression'],
-                                                             mse_time['single_SVM'], mse_time['single_NN'],
-                                                             mse_time['single_GP'], mse_time['MTL_GP'],
-                                                             mse_time['multiple_linear_regression'],
-                                                             mse_time['multiple_SVM'], mse_time['multiple_NN'],
-                                                             mse_time['multiple_GP'], len(item), len(shape_set)]
-        current_mse_ratio_result.loc[len(mse_ratio_result)] = [mse_ratio['ratio_baseline'],
-                                                               mse_ratio['single_linear_regression'],
-                                                               mse_ratio['single_SVM'], mse_ratio['single_NN'],
-                                                               mse_ratio['single_GP'], mse_ratio['MTL_GP'],
-                                                               mse_ratio['multiple_linear_regression'],
-                                                               mse_ratio['multiple_SVM'], mse_ratio['multiple_NN'],
-                                                               mse_ratio['multiple_GP'], len(item), len(shape_set)]
-    mse_time_result.loc[len(mse_time_result)] = current_mse_time_result.mean()
-    mse_ratio_result.loc[len(mse_ratio_result)] = current_mse_ratio_result.mean()
+    # current_mse_time_result = pd.DataFrame(
+    #     columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP',
+    #              'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'bin_number'])
+    # current_mse_ratio_result = pd.DataFrame(
+    #     columns=['baseline', 'single_linear_regression', 'single_SVM', 'single_NN', 'single_GP', 'MTL_GP',
+    #              'multiple_linear_regression', 'multiple_SVM', 'multiple_NN', 'multiple_GP', 'bin_number'])
+    # for fold in range(total_fold):
+    #     print fold
+    #     ratio_result, X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list = single_shape_learning(
+    #         dataset, fold, total_fold)
+    #     if ratio_result is None:
+    #         continue
+    #     ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
+    #     time_result, mse_time, ratio_result, mse_ratio = check_performance(output_test_list, ratio_result)
+    #     current_mse_time_result.loc[len(mse_time_result)] = [mse_time['baseline'], mse_time['single_linear_regression'],
+    #                                                          mse_time['single_SVM'], mse_time['single_NN'],
+    #                                                          mse_time['single_GP'], mse_time['MTL_GP'],
+    #                                                          mse_time['multiple_linear_regression'],
+    #                                                          mse_time['multiple_SVM'], mse_time['multiple_NN'],
+    #                                                          mse_time['multiple_GP'], len(item), len(shape_set)]
+    #     current_mse_ratio_result.loc[len(mse_ratio_result)] = [mse_ratio['ratio_baseline'],
+    #                                                            mse_ratio['single_linear_regression'],
+    #                                                            mse_ratio['single_SVM'], mse_ratio['single_NN'],
+    #                                                            mse_ratio['single_GP'], mse_ratio['MTL_GP'],
+    #                                                            mse_ratio['multiple_linear_regression'],
+    #                                                            mse_ratio['multiple_SVM'], mse_ratio['multiple_NN'],
+    #                                                            mse_ratio['multiple_GP'], len(item), len(shape_set)]
+    # mse_time_result.loc[len(mse_time_result)] = current_mse_time_result.mean()
+    # mse_ratio_result.loc[len(mse_ratio_result)] = current_mse_ratio_result.mean()
 
-    #
-    # # print set(item.shape_id)
-    # ratio_result, X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list = single_shape_learning(item)
-    # if ratio_result is None:
-    #     continue
-    # ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
-    # time_result, mse_time, ratio_result, mse_ratio = check_performance(output_test_list, ratio_result)
-    # mse_time_result.loc[len(mse_time_result)] = [mse_time['baseline'], mse_time['single_linear_regression'], mse_time['single_SVM'], mse_time['single_NN'], mse_time['single_GP'], mse_time['MTL_GP'], mse_time['multiple_linear_regression'], mse_time['multiple_SVM'], mse_time['multiple_NN'], mse_time['multiple_GP'], len(item), len(shape_set)]
-    # mse_ratio_result.loc[len(mse_ratio_result)] = [mse_ratio['ratio_baseline'], mse_ratio['single_linear_regression'], mse_ratio['single_SVM'], mse_ratio['single_NN'], mse_ratio['single_GP'], mse_ratio['MTL_GP'], mse_ratio['multiple_linear_regression'], mse_ratio['multiple_SVM'], mse_ratio['multiple_NN'], mse_ratio['multiple_GP'], len(item), len(shape_set)]
+
+    # print set(item.shape_id)
+    ratio_result, X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list = single_shape_learning(item)
+    if ratio_result is None:
+        continue
+    ratio_result = multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list)
+    time_result, mse_time, ratio_result, mse_ratio = check_performance(output_test_list, ratio_result)
+    mse_time_result.loc[len(mse_time_result)] = [mse_time['baseline'], mse_time['single_linear_regression'], mse_time['single_SVM'], mse_time['single_NN'], mse_time['single_GP'], mse_time['MTL_GP'], mse_time['multiple_linear_regression'], mse_time['multiple_SVM'], mse_time['multiple_NN'], mse_time['multiple_GP'], len(item), len(shape_set)]
+    mse_ratio_result.loc[len(mse_ratio_result)] = [mse_ratio['ratio_baseline'], mse_ratio['single_linear_regression'], mse_ratio['single_SVM'], mse_ratio['single_NN'], mse_ratio['single_GP'], mse_ratio['MTL_GP'], mse_ratio['multiple_linear_regression'], mse_ratio['multiple_SVM'], mse_ratio['multiple_NN'], mse_ratio['multiple_GP'], len(item), len(shape_set)]
 
 
 mse_time_result.to_csv('result/learning_curve/final_mse_time_result.csv')
