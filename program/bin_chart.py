@@ -302,3 +302,6 @@ for bin_number, item in enumerate(dataset_list):
     #                                                    mse_ratio['multiple_GP'], bin_number]
     # mse_time_result.loc[len(mse_time_result)] = current_mse_time_result.mean()
     # mse_ratio_result.loc[len(mse_ratio_result)] = current_mse_ratio_result.mean()
+
+mse_time_result.to_csv('result/bin_chart/mse_time_result.csv')
+mse_ratio_result.to_csv('result/bin_chart/mse_ratio_result.csv')
