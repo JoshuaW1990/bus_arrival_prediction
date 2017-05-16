@@ -256,7 +256,7 @@ mse_ratio_result = pd.DataFrame(columns=['baseline', 'single_linear_regression',
 
 dataset_list = generate_dataset_list(dataset)
 
-for bin_number, item in enumerate(dataset_list):
+for bin_number, item in enumerate(dataset_list[5:]):
     print bin_number
     ratio_result, X_train_list, X_test_list, output_train_list, output_test_list, y_train_list, y_test_list = single_shape_learning(
         item)
@@ -303,5 +303,5 @@ for bin_number, item in enumerate(dataset_list):
     # mse_time_result.loc[len(mse_time_result)] = current_mse_time_result.mean()
     # mse_ratio_result.loc[len(mse_ratio_result)] = current_mse_ratio_result.mean()
 
-mse_time_result.to_csv('result/bin_chart/mse_time_result.csv')
-mse_ratio_result.to_csv('result/bin_chart/mse_ratio_result.csv')
+# mse_time_result.to_csv('result/bin_chart/mse_time_result.csv')
+# mse_ratio_result.to_csv('result/bin_chart/mse_ratio_result.csv')
