@@ -44,13 +44,15 @@ def filter_single_history(single_history, stop_sequence):
 #################################################################################################################
 
 
-def get_precip(gooddate):
+def get_precip(gooddate, api_token):
     """
+    api_token: d083880ff5428216
+    
     Download the weather information for a specific date
     :param gooddate: date for downloading
     :return: list of the data
     """
-    urlstart = 'http://api.wunderground.com/api/d083880ff5428216/history_'
+    urlstart = 'http://api.wunderground.com/api/' + api_token + '/history_'
     urlend = '/q/NY/New_York.json'
 
     url = urlstart + str(gooddate) + urlend
