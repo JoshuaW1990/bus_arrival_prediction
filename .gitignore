@@ -4,4 +4,3 @@ data/*
 .vscode/
 data/
 .ropeproject/
-*.csv
