@@ -683,7 +683,7 @@ Provide the api for users
 """
 
 # weather data
-def obtain_weather(start_date, end_date, api_token, save_path=None):
+def obtain_weather(start_date, end_date, api_token, save_path=None, engine=None):
     """
     Download the weather.csv file into save_path
     
@@ -696,6 +696,8 @@ def obtain_weather(start_date, end_date, api_token, save_path=None):
     weather = download_weather(start_date, end_date, api_token)
     if save_path is not None:
         weather.to_csv(save_path)
+    if engine is not None:
+        weather.to_sql(name='weather', con=engine, if_exists='replace', index_label='id')
     return weather
 
 
@@ -727,7 +729,7 @@ def download_history_file(year, month, date_list, save_path):
         file_url = url + filename
         download_file.retrieve(file_url, save_path + filename)
 
-def obtain_history(start_date, end_date, trips, history_path, save_path=None):
+def obtain_history(start_date, end_date, trips, history_path, save_path=None, engine=None):
     """
     Generate the csv file for history data
     
@@ -761,11 +763,13 @@ def obtain_history(start_date, end_date, trips, history_path, save_path=None):
     # export csv file
     if save_path is not None:
         result.to_csv(save_path)
+    if engine is not None:
+        result.to_sql(name='history', con=engine, if_exists='replace', index_label='id')
     return result
 
 
 # route_stop_dist data
-def obtain_route_stop_dist(trips, stop_times, history_file, save_path=None):
+def obtain_route_stop_dist(trips, stop_times, history_file, save_path=None, engine=None):
     """
     Generate the csv file for route_stop_dist data. In order to obtain a more complete data for route_stop_dist, the size of the history file should be as large as possible.
     
@@ -784,11 +788,13 @@ def obtain_route_stop_dist(trips, stop_times, history_file, save_path=None):
     route_stop_dist = calculate_stop_distance(stop_times, history)
     if save_path is not None:
         route_stop_dist.to_csv(save_path)
+    if engine is not None:
+        route_stop_dist.to_sql(name='route_stop_dist', , con=engine, if_exists='replace', index_label='id')
     return route_stop_dist
 
 
 # segment data
-def obtain_segment(weather_df, trips, stop_times, route_stop_dist, full_history, training_date_list, save_path=None):
+def obtain_segment(weather_df, trips, stop_times, route_stop_dist, full_history, training_date_list, save_path=None, engine=None):
     """
     Generate the csv file for segment table
     
@@ -811,11 +817,13 @@ def obtain_segment(weather_df, trips, stop_times, route_stop_dist, full_history,
 
     if save_path is not None:
         segment_df.to_csv(save_path)
+    if engine is not None:
+        segment_df.to_sql(name='segment', con=engine, if_exists='replace', index_label='id')
     return segment_df
 
 
 # api_data table
-def obtain_api_data(route_stop_dist, full_history, date_list, time_list, stop_num, save_path=None):
+def obtain_api_data(route_stop_dist, full_history, date_list, time_list, stop_num, save_path=None, engine=None):
     """
     Generate the csv file for api_data table
     
@@ -831,5 +839,7 @@ def obtain_api_data(route_stop_dist, full_history, date_list, time_list, stop_nu
     result = generate_api_data(date_list, time_list, stop_num, route_stop_dist, full_history)
     if save_path is not None:
         result.to_csv(save_path)
+    if engine is not None:
+        result.to_sql(name='api_data', con=engine, if_exists='replace', index_label='id')
     return result
 

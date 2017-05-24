@@ -53,9 +53,16 @@ In preprocess part, it provides following functions: `obtain_weather`, `download
 
 Among these functions, `download_history_file` will download the compressed historical data into required path. Users need to decompress these historical data before using `obtain_history` function.
 
-All the other functions will generate the corresponding data table. Considering users might choose different way to store the dataset, these function also provide two strategies for storing the dataset. In all the functions with prefix `obtain_`, users can choose to provide a `save_path` or not. If the user doesn't provide the `save_path`, these functions will not export the data into specific files and the user can use the return value to store them into database with functions like `pandas.to_sql`. If the user provides the `save_path`, the functions will export the data into the corresponding file in `save_path`. 
+All the other functions will generate the corresponding data table. Considering users might choose different way to store the dataset, these function also provide two strategies for storing the dataset: In all the functions with prefix `obtain_`, users can choose to provide a `save_path` or `engine`. 
 
-More examples can be found in `example.py` file.
+* If the user provides the `save_path` to indicate the directory of the file to store data, these functions will export the data into the file according to the `save_path`.
+* If the user provides the `engine` to connect the database, these functions will write the data into the database.
+* If the user doesn't provide any of them, these functions will neither export the file by directory nor write the data into dabase by `engine`.
+
+More examples can be found in `example.py` file. 
+
+**Note**:
+For large data(>100 MB), the efficiency of the functions `pandas.to_sql` and `pandas.read_sql` is very slow. Since in all of these functions, `pandas.to_sql` is called, users need to pay attention to the size of the data before exporting them into database.
 
 ### Implementation
 
