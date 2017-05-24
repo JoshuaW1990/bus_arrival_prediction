@@ -1,0 +1,12 @@
+{
+  "MTL_GP": 66453.420722267794,
+  "baseline": 130807.14376223672,
+  "single_linear_regression": 43163.430518432826,
+  "single_SVM": 50803.296447740897,
+  "multiple_SVM": 56158.017524998613,
+  "single_NN": 43275.702595310533,
+  "single_GP": 41465.692020190785,
+  "multiple_linear_regression": 48870.220850299716,
+  "multiple_NN": 49199.718821591945,
+  "multiple_GP": 47416.997576623413
+}
