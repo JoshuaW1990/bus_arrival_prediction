@@ -1,1 +1,0 @@
-['weather', 'rush_hour', 'baseline_result', 'ratio_current_trip']
