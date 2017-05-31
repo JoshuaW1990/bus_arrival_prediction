@@ -10,23 +10,6 @@ import os
 from sklearn import preprocessing
 
 
-
-# def preprocess_dataset(origin_dataset):
-#     # preprocess to obtain the dataset
-#     full_dataset = pd.DataFrame()
-#     full_dataset['shape_id'] = origin_dataset['shape_id']
-#     full_dataset['weather'] = origin_dataset['weather']
-#     full_dataset['rush_hour'] = origin_dataset['rush_hour']
-#     full_dataset['baseline_result'] = origin_dataset['baseline_result']
-#     full_dataset['ratio_baseline'] = origin_dataset['actual_arrival_time'] / origin_dataset['baseline_result']
-#     full_dataset['ratio_current_trip'] = origin_dataset['ratio_current_trip']
-#     full_dataset['ratio_prev_trip'] = origin_dataset['ratio_prev_trip']
-#     full_dataset['ratio_prev_seg'] = origin_dataset['actual_arrival_time'] / origin_dataset['prev_arrival_time']
-#     full_dataset['prev_arrival_time'] = origin_dataset['prev_arrival_time']
-#     full_dataset['actual_arrival_time'] = origin_dataset['actual_arrival_time']
-#     return full_dataset
-
-
 def split_dataset(dataset, fold, total_fold):
     """
     Split the dataset according to fold information
@@ -60,94 +43,6 @@ def split_dataset(dataset, fold, total_fold):
     return X_train, X_test, output_train, output_test
 
 
-# def generate_ratio_result(X_train, X_test, y_train, y_test):
-#     """
-#     train and predict the result with the training set and the test set
-#
-#     :param X_train: the features of the training set
-#     :param X_test: the output of the training set
-#     :param y_train: the features of the test set
-#     :param y_test: the output of the test set
-#     :return: dataframe of the predicted result under different models
-#     """
-#     # generate the result for random samples
-#     ratio_result = pd.DataFrame(y_test, columns=['ratio_baseline'])
-#
-#     model1 = linear_model.LinearRegression()
-#     model1.fit(X_train, y_train)
-#     y_pred = model1.predict(X_test)
-#     ratio_result['single_linear_regression'] = y_pred
-#
-#     model2 = svm.SVR()
-#     model2.fit(X_train, y_train)
-#     y_pred = model2.predict(X_test)
-#     ratio_result['single_SVM'] = y_pred
-#
-#     model3 = neural_network.MLPRegressor(solver='lbfgs', max_iter=1000, learning_rate_init=0.005)
-#     model3.fit(X_train, y_train)
-#     y_pred = model3.predict(X_test)
-#     ratio_result['single_NN'] = y_pred
-#
-#     kernel = GPy.kern.Matern32(input_dim=6, ARD=True)
-#     m_full = GPy.models.SparseGPRegression(X_train, y_train.reshape(len(y_train), 1), kernel)
-#     m_full.optimize('bfgs')
-#     y_pred, y_var = m_full.predict(X_test)
-#     ratio_result['single_GP'] = y_pred
-#
-#     return ratio_result
-#
-#
-# def multiple_shape_learning(ratio_result, X_train_list, y_train_list, X_test_list):
-#     """
-#     the dataset is used without considering the shape id
-#
-#     :param ratio_result: the predicted result from each model
-#     :param X_train_list: the list of input in the training set
-#     :param y_train_list: the list of output in the training set
-#     :param X_test_list: the list of input in the test set
-#     :return: dataframe of the predicted result under different models
-#     """
-#
-#     # MTL GP learning
-#     kernel = GPy.kern.Matern32(input_dim=6, ARD=True)
-#     icm = GPy.util.multioutput.ICM(input_dim=6, num_outputs=len(X_train_list), kernel=kernel)
-#     model = GPy.models.SparseGPCoregionalizedRegression(X_list=X_train_list, Y_list=y_train_list, Z_list=[], kernel=icm)
-#     model.optimize('bfgs')
-#     X_test = np.concatenate(X_test_list)
-#     X_test = np.hstack((X_test, np.ones((len(X_test), 1))))
-#     noise_dict = {'output_index': X_test[:, -1:].astype(int)}
-#     y_pred, y_var = model.predict(X_test, Y_metadata=noise_dict)
-#     ratio_result['MTL_GP'] = y_pred
-#
-#     X_train = np.concatenate(X_train_list)
-#     y_train = np.concatenate(y_train_list)
-#     y_train = y_train.reshape((len(y_train), ))
-#     X_test = np.concatenate(X_test_list)
-#
-#     model1 = linear_model.LinearRegression()
-#     model1.fit(X_train, y_train)
-#     y_pred = model1.predict(X_test)
-#     ratio_result['multiple_linear_regression'] = y_pred
-#
-#     model2 = svm.SVR()
-#     model2.fit(X_train, y_train)
-#     y_pred = model2.predict(X_test)
-#     ratio_result['multiple_SVM'] = y_pred
-#
-#     model3 = neural_network.MLPRegressor(solver='lbfgs', max_iter=1000, learning_rate_init=0.005)
-#     model3.fit(X_train, y_train)
-#     y_pred = model3.predict(X_test)
-#     ratio_result['multiple_NN'] = y_pred
-#
-#     kernel = GPy.kern.Matern32(input_dim=6, ARD=True)
-#     m_full = GPy.models.SparseGPRegression(X_train, y_train.reshape(len(y_train), 1), kernel)
-#     m_full.optimize('bfgs')
-#     y_pred, y_var = m_full.predict(X_test)
-#     ratio_result['multiple_GP'] = y_pred
-#
-#     return ratio_result
-#
-#
 def single_shape_learning(full_dataset, fold, total_fold):
     """
     the dataset is used when considering the shape id

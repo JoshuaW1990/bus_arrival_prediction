@@ -11,7 +11,7 @@ This repo can be divided into two different parts:
 
 For preprocess part, all the code can be found in the directory named `preprocess` and a simple example script is also provided. Users can feel free to use that code and example if need.
 
-
+For model implementation part, all the code can be found in the directory named `implementation` and there is also a simple example script. Users can feel free to use or edit that code.
 
 
 
@@ -66,6 +66,35 @@ For large data(>100 MB), the efficiency of the functions `pandas.to_sql` and `pa
 
 ### Implementation
 
+In the implementation part, it provides several files for users and the usage can be easily understood from the file name. Users can find the functions they need in `main function` section at the bottom in each file.
+
+**baseline.py**
+
+This file provides three different types of baseline algorithm and three corresponding functions to obtain the result from these algorithms.
+
+**build_dataset.py**
+
+This file provides a function to generate the `dataset` table. In this `dataset` table, it provides several different features that users can use for training and testing.
+
+**feature_selection.py**
+
+This file provides a feature selection process starting from all features to removing two arbitrary features.
+
+**model_selection.py**
+
+This file provides a function which user can use to select the solver function and activation function for neural network or select the kernel function for gaussian process.
+
+**cross_validation.py**
+
+This file provides a process for cross validation. Users can choose how many folds for running the cross validation.
+
+**learning_curve.py**
+
+This file provides a function to obtain the learning curve. Here, ten different size of the dataset will be tested.
+
+**group_learning.py**
+
+This file provides a function to obtain the group learning result. Here, 5 different groups are selected based on the `actual_arrival_time`.
 
 ## Dependencies
 
