@@ -4,13 +4,13 @@ import pandas as pd
 
 # setting for path
 # path for exporting data
-save_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/preprocess/example/'
+save_path = '[local path to this repo]/preprocess/example/'
 # path for storing the prepared example dataset
-example_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/example_output/preprocessed_data/'
+example_path = '[local path to this repo]/example_output/preprocessed_data/'
 # path for storing raw historical data
-history_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/data/history/'
+history_path = '[local path to this repo]/data/history/'
 # path for storing GTFS data
-gtfs_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/data/GTFS/gtfs/'
+gtfs_path = '[local path to this repo]/data/GTFS/gtfs/'
 
 # read files
 weather_df = pd.read_csv(example_path + 'weather.csv')

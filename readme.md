@@ -46,6 +46,7 @@ Recommend to use `virtualenv` for python.
 pip install -r requirements.txt
 ```
 
+The example outputs including the preprocess part and the implementation part can be found [here](https://drive.google.com/open?id=0B02rcAGoKtrAY0NsbU8yRExoeTg).
 
 ### Preprocess
 
