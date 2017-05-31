@@ -3,10 +3,13 @@ from sqlalchemy import create_engine
 import pandas as pd
 
 # setting for path
-
+# path for exporting data
 save_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/preprocess/example/'
+# path for storing the prepared example dataset
 example_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/example_output/preprocessed_data/'
+# path for storing raw historical data
 history_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/data/history/'
+# path for storing GTFS data
 gtfs_path = '/Users/junwang/PycharmProjects/bus_arrival_prediction/data/GTFS/gtfs/'
 
 # read files

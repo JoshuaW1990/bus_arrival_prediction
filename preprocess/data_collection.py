@@ -3,7 +3,6 @@ Preprocess the dataset
 """
 
 # import module
-
 import pandas as pd
 import os
 from datetime import datetime, timedelta
@@ -12,7 +11,6 @@ import requests
 import random
 import urllib
 
-path = '../'
 
 #################################################################################################################
 #                   helper function for api data, segment data, and other calcualtion                           #
@@ -299,6 +297,7 @@ generate the segment table
 def generate_original_segment(full_history_var, weather, stop_times_var):
     """
     Generate the original segment data
+    
     Algorithm:
     Split the full historical data according to the service date, trip_id with groupby function
     For name, item in splitted historical dataset:
@@ -306,6 +305,7 @@ def generate_original_segment(full_history_var, weather, stop_times_var):
         Find the vehicle id which is the majority elements in this column (For removing the abnormal value in historical data)
         calcualte the travel duration within the segement of this splitted historical data and save the result into list
     concatenate the list
+    
     :param full_history_var: the historical data after filtering
     :param weather: the dataframe for the weather information
     :param stop_times_var: the dataframe from stop_times.txt
@@ -539,8 +539,6 @@ def improve_dataset(segment_df, stop_times, weather_df):
 #################################################################################################################
 #                                    api data section                                                              #
 #################################################################################################################
-
-
 """
 Generate the api data from the GTFS data and the historical data
 """
@@ -571,7 +569,6 @@ def generate_api_data(date_list, time_list, stop_num, route_stop_dist, full_hist
     :param full_history: the dataframe for the history table
     :return: the dataframe for the api data
     """
-    trips = pd.read_csv(path + 'data/GTFS/gtfs/trips.txt')
     trip_route_dict = {}
     route_stop_dict = {}
     grouped = route_stop_dist.groupby(['shape_id'])
@@ -579,7 +576,7 @@ def generate_api_data(date_list, time_list, stop_num, route_stop_dist, full_hist
         stop_sequence = list(single_route_stop_dist.stop_id)
         if len(stop_sequence) < 5:
             continue
-        trip_set = set(trips[trips.shape_id == shape_id].trip_id)
+        trip_set = set(full_history[full_history.shape_id == shape_id].trip_id)
         current_dict = dict.fromkeys(trip_set, shape_id)
         trip_route_dict.update(current_dict)
         stop_set = set()
@@ -621,12 +618,11 @@ def generate_api_data(date_list, time_list, stop_num, route_stop_dist, full_hist
                 if tmp_index > target_index:
                     break
                 # If the bus does not pass the target stop, save the remained stops into the stop sequence and calculate the result
-                route_id = trips[trips.shape_id == shape_id].iloc[0].route_id
+                route_id = single_history.iloc[0].route_id
                 current_list = generate_single_api(current_time, route_id, prev_history, next_history, target_stop, shape_id)
                 if current_list is not None:
                     result.loc[len(result)] = current_list
     return result
-
 
 
 def generate_single_api(current_time, route_id, prev_history, next_history, stop_id, shape_id):
@@ -679,7 +675,7 @@ def generate_single_api(current_time, route_id, prev_history, next_history, stop
 #                                    main function section                                                      #
 #################################################################################################################
 """
-Provide the api for users
+Functions for users
 """
 
 # weather data
@@ -691,6 +687,7 @@ def obtain_weather(start_date, end_date, api_token, save_path=None, engine=None)
     :param end_date: similar to start_date
     :param api_token: api_token for wunderground api interface. Anyone can apply for it in free.
     :param save_path: path of a csv file for storing the weather table.
+    :param engine: database connect engine
     :return: return the weather table in dataframe
     """
     weather = download_weather(start_date, end_date, api_token)
@@ -729,6 +726,7 @@ def download_history_file(year, month, date_list, save_path):
         file_url = url + filename
         download_file.retrieve(file_url, save_path + filename)
 
+
 def obtain_history(start_date, end_date, trips, history_path, save_path=None, engine=None):
     """
     Generate the csv file for history data
@@ -738,6 +736,7 @@ def obtain_history(start_date, end_date, trips, history_path, save_path=None, en
     :param trips: the dataframe storing the table from trips.txt file in GTFS dataset
     :param history_path: path of all the historical data. User should place all the historical data under the same directory and use this directory as the history_path. Please notice that the change of the filename might cause error.
     :param save_path: path of a csv file to store the history table
+    :param engine: database connect engine
     :return: the history table in dataframe
     """
     trip_set = set(trips.trip_id)
@@ -747,9 +746,9 @@ def obtain_history(start_date, end_date, trips, history_path, save_path=None, en
     for filename in file_list:
         if not filename.endswith('.csv'):
             continue
-        if str(start_date) <= str(filename[9:17]) <= str(end_date):
+        if int(start_date) <= int(filename[9:17]) <= int(end_date):
             print filename
-            ptr_history = pd.read_csv(path + 'data/history/' + filename)
+            ptr_history = pd.read_csv(history_path + filename)
             tmp_history = ptr_history[(ptr_history.dist_along_route != '\N') & (ptr_history.dist_along_route != 0) & (ptr_history.progress == 0) & (ptr_history.block_assigned == 1) & (ptr_history.dist_along_route > 1) & (ptr_history.trip_id.isin(trip_set))]
             history_list.append(tmp_history)
     result = pd.concat(history_list, ignore_index=True)
@@ -773,12 +772,11 @@ def obtain_route_stop_dist(trips, stop_times, history_file, save_path=None, engi
     """
     Generate the csv file for route_stop_dist data. In order to obtain a more complete data for route_stop_dist, the size of the history file should be as large as possible.
     
-    :type trips: pandas.Dataframe
-    
     :param trips: the dataframe storing the table from trips.txt file in GTFS dataset
     :param stop_times: the dataframe storing the table from stop_times.txt file in GTFS dataset
     :param history_file: path of the preprocessed history file
     :param save_path: path of a csv file to store the route_stop_dist table
+    :param engine: database connect engine
     :return: the route_stop_dist table in dataframe
     """
     trip_route_dict = trips.set_index('trip_id').to_dict(orient='index')
@@ -789,7 +787,7 @@ def obtain_route_stop_dist(trips, stop_times, history_file, save_path=None, engi
     if save_path is not None:
         route_stop_dist.to_csv(save_path)
     if engine is not None:
-        route_stop_dist.to_sql(name='route_stop_dist', , con=engine, if_exists='replace', index_label='id')
+        route_stop_dist.to_sql(name='route_stop_dist', con=engine, if_exists='replace', index_label='id')
     return route_stop_dist
 
 
@@ -804,6 +802,7 @@ def obtain_segment(weather_df, trips, stop_times, route_stop_dist, full_history,
     :param full_history: the dataframe storing the history table
     :param training_date_list: the list of dates to generate the segments from history table
     :param save_path: path of a csv file to store the segment table
+    :param engine: database connect engine
     :return: the segment table in dataframe
     """
     full_history = full_history[full_history.service_date.isin(training_date_list)]
@@ -833,6 +832,7 @@ def obtain_api_data(route_stop_dist, full_history, date_list, time_list, stop_nu
     :param time_list: the list of strings to represent the time for generating api data. Example: ['12:00:00', '12:05:00', '12:10:00', '12:15:00', '12:20:00', '12:25:00', '12:30:00']. Please follow the same format.
     :param stop_num: the number of target stop for each shape id
     :param save_path: path of a csv file to store the api_data table
+    :param engine: database connect engine
     :return: the dataframe storing api_data table
     """
     full_history = full_history[full_history.service_date.isin(date_list)]
